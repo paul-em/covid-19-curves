@@ -7,14 +7,14 @@
       <a
         class="p-4 text-blue no-underline"
         href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">Data provided by WHO</a>
+      <span class="text-grey-dark">Updated: {{ lastUpdate }}</span>
       <github-corner url="https://github.com/paul-em/covid-19-curves"/>
     </header>
-    <div class="flex flex-1 flex-col-reverse lg:flex-row">
-      <section class="flex flex-col flex-1">
+    <div class="flex flex-1 flex-col-reverse lg:overflow-hidden lg:flex-row">
+      <section class="flex flex-col lg:overflow-y-scroll overflow-x-auto">
         <location-table
           v-model="selected"
-          :data="data"
-          class="flex-1"/>
+          :data="data"/>
       </section>
       <section class="flex flex-col flex-1">
         <line-chart
@@ -59,6 +59,9 @@ export default {
     selected: ['World'],
   }),
   computed: {
+    lastUpdate() {
+      return this.dates[this.dates.length - 1];
+    },
     filteredData() {
       return this.data.filter(item => this.selected.includes(item.location));
     },

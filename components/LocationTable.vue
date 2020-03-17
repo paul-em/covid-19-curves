@@ -1,90 +1,51 @@
 <template>
-  <div class="overflow-y-scroll">
-    <table>
-      <thead>
-        <tr>
-          <th>
-            Color
-          </th>
-          <th
-            class="cursor-pointer"
-            @click="changeSorting('location')"
-          >
-            Location
-          </th>
-          <th
-            class="cursor-pointer"
-            @click="changeSorting('new_deaths')"
-          >
-            New Deaths
-          </th>
-          <th
-            class="cursor-pointer"
-            @click="changeSorting('total_deaths')"
-          >
-            Total Deaths
-          </th>
-          <th
-            class="cursor-pointer"
-            @click="changeSorting('new_cases')"
-          >
-            New Cases
-          </th>
-          <th
-            class="cursor-pointer"
-            @click="changeSorting('total_cases')"
-          >
-            Total Cases
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="row in rows"
-          :key="row.location"
-          class="cursor-pointer"
-          @click="toggleSelection(row.location)"
-        >
-          <td>
-            <color-surface
-              :style="{ opacity: value.includes(row.location) ? 1 : 0.2 }"
-              :value="row.location"/>
-          </td>
-          <td>
-            {{ row.location }}
-          </td>
-          <td>
-            {{ row.new_deaths }}
-          </td>
-          <td>
-            {{ row.total_deaths }}
-          </td>
-          <td>
-            {{ row.new_cases }}
-          </td>
-          <td>
-            {{ row.total_cases }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div
+    :style="{ width: `${width}px` }"
+  >
+    <table-header
+      v-model="sort"
+      :columns="columns"
+      class="sticky top-0"/>
+    <div>
+      <table-row
+        v-for="row in rows"
+        :key="row.key"
+        :columns="columns"
+        :row="row"
+        :class="{ 'opacity-50': !value.includes(row.key) }"
+        class="cursor-pointer hover:opacity-75"
+        @click="toggleSelection(row.key)">
+        <color-surface
+          slot="column-color"
+          :value="row.location"
+          :class="{ 'opacity-25': !value.includes(row.key) }"
+          class="rounded-full"
+        />
+      </table-row>
+    </div>
   </div>
 </template>
 
 <script>
 import ColorSurface from './ColorSurface.vue';
+import TableHeader from './TableHeader.vue';
+import TableRow from './TableRow.vue';
 
 export default {
   components: {
     ColorSurface,
+    TableHeader,
+    TableRow,
   },
   props: {
     value: { type: Array, default: () => [] },
     data: { type: Array, required: true },
   },
   data: () => ({
-    sortBy: 'total_cases',
-    sortDesc: true,
+    sort: {
+      prop: 'total_cases',
+      desc: true,
+    },
   }),
   computed: {
     locations() {
@@ -96,12 +57,54 @@ export default {
       });
       return locations;
     },
+    columns() {
+      return [
+        {
+          label: '',
+          value: 'color',
+          width: 36,
+        },
+        {
+          label: 'Location',
+          value: 'location',
+          width: 250,
+        },
+        {
+          label: 'New Deaths',
+          value: 'new_deaths',
+          width: 120,
+        },
+        {
+          label: 'Total Deaths',
+          value: 'total_deaths',
+          width: 120,
+        },
+        {
+          label: 'New Cases',
+          value: 'new_cases',
+          width: 120,
+        },
+        {
+          label: 'Total Cases',
+          value: 'total_cases',
+          width: 120,
+        },
+      ];
+    },
+    width() {
+      let total = 0;
+      this.columns.forEach((column) => {
+        total += column.width;
+      });
+      return total;
+    },
     rows() {
       const rows = this.locations
         .map((location) => {
           const locationData = this.data.filter(item => item.location === location);
           const latest = locationData[locationData.length - 1];
           return {
+            key: latest.location,
             location: latest.location,
             new_cases: parseInt(latest.new_cases || 0, 10),
             new_deaths: parseInt(latest.new_deaths || 0, 10),
@@ -110,12 +113,12 @@ export default {
           };
         })
         .sort((a, b) => {
-          if (typeof a[this.sortBy] === 'string') {
-            return a[this.sortBy].localeCompare(b[this.sortBy]);
+          if (typeof a[this.sort.prop] === 'string') {
+            return a[this.sort.prop].localeCompare(b[this.sort.prop]);
           }
-          return a[this.sortBy] - b[this.sortBy];
+          return a[this.sort.prop] - b[this.sort.prop];
         });
-      if (this.sortDesc) {
+      if (this.sort.desc) {
         return rows.reverse();
       }
       return rows;
@@ -132,19 +135,10 @@ export default {
         ]);
       }
     },
-    changeSorting(sort) {
-      if (this.sortBy === sort) {
-        this.sortDesc = !this.sortDesc;
-      } else {
-        this.sortBy = sort;
-        this.sortDesc = true;
-      }
-    },
   },
 };
 </script>
 
 
 <style lang="scss" scoped>
-
 </style>

@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 /*
 
 Tailwind - The Utility-First CSS Framework
@@ -887,7 +888,7 @@ module.exports = {
     minHeight: ['responsive'],
     minWidth: ['responsive'],
     negativeMargin: ['responsive'],
-    opacity: ['responsive'],
+    opacity: ['responsive', 'hover'],
     outline: ['focus'],
     overflow: ['responsive'],
     padding: ['responsive'],
@@ -926,6 +927,7 @@ module.exports = {
   */
 
   plugins: [
+    // eslint-disable-next-line import/no-extraneous-dependencies
     require('tailwindcss/plugins/container')({
       // center: true,
       // padding: '1rem',
