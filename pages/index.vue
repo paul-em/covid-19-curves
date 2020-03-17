@@ -16,14 +16,14 @@
 import LineChart from '../components/LineChart.vue';
 
 export default {
+  async asyncData({ $axios }) {
+    const re = await $axios.get('/data.json');
+    return {
+      data: re.data,
+    };
+  },
   components: {
     LineChart,
-  },
-  computed: {
-    data() {
-      console.log(this.$store);
-      return this.$store.data;
-    },
   },
 };
 </script>
