@@ -77,6 +77,7 @@ export default {
           label: 'New Cases',
           value: 'new_cases',
           width: 75,
+          prefix: v => (v > 1 ? '+' : ''),
         },
         {
           label: 'Total Cases',
@@ -92,11 +93,13 @@ export default {
           label: 'Cases Doubled',
           value: 'cases_doubled',
           width: 75,
+          postfix: v => (v > 1 ? ' days' : ' day'),
         },
         {
           label: 'New Deaths',
           value: 'new_deaths',
           width: 75,
+          prefix: v => (v > 1 ? '+' : ''),
         },
         {
           label: 'Total Deaths',
@@ -112,6 +115,7 @@ export default {
           label: 'Deaths Doubled',
           value: 'deaths_doubled',
           width: 75,
+          postfix: v => (v > 1 ? ' days' : ' day'),
         },
       ];
     },

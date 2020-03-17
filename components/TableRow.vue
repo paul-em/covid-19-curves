@@ -9,7 +9,9 @@
       :style="{ width: `${column.width}px` }"
       class="truncate inline-block text-sm p-2"
     >
-      {{ row[column.value] }}
+      <span v-if="column.prefix">
+      {{ column.prefix(row[column.value]) }}</span>{{ row[column.value] }}<span
+        v-if="column.postfix">{{ column.postfix(row[column.value]) }}</span>
       <slot :name="`column-${column.value}`"/>
     </div>
   </div>
