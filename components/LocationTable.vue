@@ -82,6 +82,11 @@ export default {
           width: 120,
         },
         {
+          label: 'Deaths/Million',
+          value: 'deaths_in_million',
+          width: 120,
+        },
+        {
           label: 'New Cases',
           value: 'new_cases',
           width: 120,
@@ -89,6 +94,11 @@ export default {
         {
           label: 'Total Cases',
           value: 'total_cases',
+          width: 120,
+        },
+        {
+          label: 'Cases/Million',
+          value: 'cases_in_million',
           width: 120,
         },
       ];
@@ -106,8 +116,8 @@ export default {
           const locationData = this.data.filter(item => item.location === location);
           const latest = locationData[locationData.length - 1];
           return {
+            ...latest,
             key: latest.location,
-            location: latest.location,
             new_cases: parseInt(latest.new_cases || 0, 10),
             new_deaths: parseInt(latest.new_deaths || 0, 10),
             total_cases: parseInt(latest.total_cases || 0, 10),

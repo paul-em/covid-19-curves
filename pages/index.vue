@@ -33,6 +33,7 @@ import LineChart from '../components/LineChart.vue';
 import MultiSelect from '../components/MultiSelect.vue';
 import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
+import populations from '../assets/populations';
 
 export default {
   components: {
@@ -52,7 +53,20 @@ export default {
       console.error(result.errors);
     }
     return {
-      data: result.data,
+      data: result.data.map((item) => {
+        const population = populations[item.location];
+        let casesInMillion = null;
+        let deathsInMillion = null;
+        if (population) {
+          casesInMillion = Math.round((item.total_cases / population) * 10000000) / 10;
+          deathsInMillion = Math.round((item.total_deaths / population) * 10000000) / 10;
+        }
+        return {
+          ...item,
+          cases_in_million: casesInMillion,
+          deaths_in_million: deathsInMillion,
+        };
+      }),
     };
   },
   data: () => ({
