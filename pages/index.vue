@@ -1,30 +1,38 @@
 <template>
-  <section class="container">
-    <div>
+  <div class="flex">
+    <section class="flex flex-col flex-1 h-screen">
       <h1>
         COVID-19 Curves
       </h1>
       <multi-select
         v-model="selected"
         :options="locationOptions"
+        class="flex-1"
       />
-      <line-chart
-        :datasets="datasets"
-        :labels="dates"
-      />
-    </div>
-  </section>
+    </section>
+    <section class="flex flex-col flex-1 h-screen">
+      <github-corner url="https://github.com/paul-em/covid-19-curves"/>
+      <div class="flex items-center flex-1">
+        <line-chart
+          :datasets="datasets"
+          :labels="dates"
+        />
+      </div>
+    </section>
+  </div>
 </template>
 
 <script>
 import csvParser from 'papaparse';
 import LineChart from '../components/LineChart.vue';
 import MultiSelect from '../components/MultiSelect.vue';
+import GithubCorner from '../components/GithubCorner.vue';
 
 export default {
   components: {
     LineChart,
     MultiSelect,
+    GithubCorner,
   },
   async asyncData({ $axios }) {
     const url = 'https://covid.ourworldindata.org/data/full_data.csv';
