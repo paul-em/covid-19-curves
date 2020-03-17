@@ -16,7 +16,7 @@
           v-model="selected"
           :data="data"/>
       </section>
-      <section class="flex flex-col flex-1">
+      <section class="flex flex-col flex-1 mx-4">
         <line-chart
           :datasets="datasets"
           :labels="dates"
