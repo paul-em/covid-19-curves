@@ -6,7 +6,7 @@
       v-model="sort"
       :columns="columns"
       class="sticky top-0"
-      @input="v => $emit('columnSelect', v.prop)"
+      @input="emitSortUpdate"
     />
     <div>
       <table-row
@@ -65,51 +65,53 @@ export default {
           label: '',
           value: 'color',
           width: 36,
+          static: true,
         },
         {
           label: 'Location',
           value: 'location',
           width: 200,
+          static: true,
         },
         {
           label: 'New Cases',
           value: 'new_cases',
-          width: 80,
+          width: 75,
         },
         {
           label: 'Total Cases',
           value: 'total_cases',
-          width: 80,
+          width: 75,
         },
         {
           label: 'Cases / Million',
           value: 'cases_in_million',
-          width: 80,
+          width: 75,
         },
         {
           label: 'Cases Doubled',
           value: 'cases_doubled',
-          width: 80,
+          width: 75,
         },
         {
           label: 'New Deaths',
           value: 'new_deaths',
-          width: 80,
+          width: 75,
         },
         {
           label: 'Total Deaths',
           value: 'total_deaths',
-          width: 80,
+          width: 75,
         },
         {
           label: 'Deaths / Million',
           value: 'deaths_in_million',
-          width: 80,
+          width: 75,
         },
         {
           label: 'Deaths Doubled',
           value: 'deaths_doubled',
-          width: 80,
+          width: 75,
         },
       ];
     },
@@ -128,12 +130,6 @@ export default {
           return {
             ...latest,
             key: latest.location,
-            new_cases: parseInt(latest.new_cases || 0, 10),
-            new_deaths: parseInt(latest.new_deaths || 0, 10),
-            total_cases: parseInt(latest.total_cases || 0, 10),
-            total_deaths: parseInt(latest.total_deaths || 0, 10),
-            deaths_doubled: this.getDeathsDoubled(location),
-            cases_doubled: this.getCasesDoubled(location),
           };
         })
         .sort((a, b) => {
@@ -159,11 +155,11 @@ export default {
         ]);
       }
     },
-    getDeathsDoubled() {
-      return 1;
-    },
-    getCasesDoubled() {
-      return 1;
+    emitSortUpdate(sort) {
+      const column = this.columns.find(c => c.value === sort.prop);
+      if (column && !column.static) {
+        this.$emit('columnSelect', column);
+      }
     },
   },
 };

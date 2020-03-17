@@ -7,7 +7,7 @@
       <a
         class="p-4 text-blue no-underline"
         href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">Data provided by WHO</a>
-      <span class="text-grey-dark">Updated: {{ lastUpdate }}</span>
+      <span class="text-grey-dark">Updated: {{ lastUpdate }} 10am CET</span>
       <github-corner url="https://github.com/paul-em/covid-19-curves"/>
     </header>
     <div class="flex flex-1 flex-col-reverse lg:overflow-hidden lg:flex-row">
@@ -17,7 +17,22 @@
           :data="data"
           @columnSelect="updateSelectedColumn"/>
       </section>
-      <section class="flex flex-col flex-1 mx-4">
+      <section class="flex flex-col flex-1 m-4">
+        <h3
+          v-if="selected.length"
+          class="m-4">{{ selectedColumn.label }} in
+          <span
+            v-for="location in selected"
+            :key="location"
+            :style="{ 'border-color': $color.hex(location) }"
+            class="border-b-2 mr-2">{{ location }}</span>
+        </h3>
+        <h3
+          v-else
+          class="m-4"
+        >
+          Select a Location to show data
+        </h3>
         <line-chart
           :datasets="datasets"
           :labels="dates"
@@ -54,17 +69,25 @@ export default {
     }
     return {
       data: result.data.map((item) => {
+        const totalCases = parseInt(item.total_cases || 0, 10);
+        const totalDeaths = parseInt(item.total_deaths || 0, 10);
         const population = populations[item.location];
         let casesInMillion = null;
         let deathsInMillion = null;
         if (population) {
-          casesInMillion = Math.round((item.total_cases / population) * 10000000) / 10;
-          deathsInMillion = Math.round((item.total_deaths / population) * 10000000) / 10;
+          casesInMillion = Math.round((totalCases / population) * 10000000) / 10;
+          deathsInMillion = Math.round((totalDeaths / population) * 10000000) / 10;
         }
         return {
           ...item,
+          new_cases: parseInt(item.new_cases || 0, 10),
+          new_deaths: parseInt(item.new_deaths || 0, 10),
+          total_cases: totalCases,
+          total_deaths: totalDeaths,
           cases_in_million: casesInMillion,
           deaths_in_million: deathsInMillion,
+          cases_doubled: 1,
+          deaths_doubled: 1,
         };
       }),
     };
@@ -72,7 +95,10 @@ export default {
   data: () => ({
     data: [],
     selected: ['World'],
-    selectedColumn: 'total_cases',
+    selectedColumn: {
+      value: 'total_cases',
+      label: 'Total Cases',
+    },
   }),
   computed: {
     lastUpdate() {
@@ -97,7 +123,8 @@ export default {
           if (!totalCases[item.location]) {
             totalCases[item.location] = this.getEmptyDataset();
           }
-          totalCases[item.location][this.dates.indexOf(item.date)] = item[this.selectedColumn];
+          const index = this.dates.indexOf(item.date);
+          totalCases[item.location][index] = item[this.selectedColumn.value];
         });
       return Object.keys(totalCases).map(location => ({
         label: location,
@@ -112,9 +139,7 @@ export default {
       return this.dates.map(() => 0);
     },
     updateSelectedColumn(column) {
-      if (column !== 'location') {
-        this.selectedColumn = column;
-      }
+      this.selectedColumn = column;
     },
   },
 };
