@@ -50,6 +50,16 @@ import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
 import populations from '../assets/populations';
 
+function getDoubledValue(timeline, prop, value) {
+  const half = value / 2;
+  const halfIndex = timeline.findIndex(item => parseInt(item[prop] || 0, 10) >= half);
+  if (halfIndex !== -1) {
+    const fullIndex = timeline.findIndex(item => parseInt(item[prop] || 0, 10) === value);
+    return fullIndex - halfIndex + 1;
+  }
+  return null;
+}
+
 export default {
   components: {
     LineChart,
@@ -67,6 +77,13 @@ export default {
     if (result.errors && result.errors.length) {
       console.error(result.errors);
     }
+    const locationTimelines = {};
+    result.data.forEach((item) => {
+      if (!locationTimelines[item.location]) {
+        locationTimelines[item.location] = [];
+      }
+      locationTimelines[item.location].push(item);
+    });
     return {
       data: result.data.map((item) => {
         const totalCases = parseInt(item.total_cases || 0, 10);
@@ -86,8 +103,8 @@ export default {
           total_deaths: totalDeaths,
           cases_in_million: casesInMillion,
           deaths_in_million: deathsInMillion,
-          cases_doubled: 1,
-          deaths_doubled: 1,
+          cases_doubled: getDoubledValue(locationTimelines[item.location], 'total_cases', totalCases),
+          deaths_doubled: getDoubledValue(locationTimelines[item.location], 'total_deaths', totalDeaths),
         };
       }),
     };
