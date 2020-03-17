@@ -5,9 +5,9 @@
       ref="chart"
     />
     <button
-      class="p-3 my-2 text-sm hover:bg-grey-lighter rounded-sm"
+      class="p-3 my-2 text-sm hover:bg-grey-lighter rounded-sm uppercase"
       @click="toggleViewType">
-      Switch to {{ linear ? 'logarithmic' : 'linear' }} view
+      {{ linear ? 'linear' : 'logarithmic' }}
     </button>
   </div>
 </template>
