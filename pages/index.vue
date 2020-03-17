@@ -6,7 +6,7 @@
       </h1>
       <multi-select
         v-model="selected"
-        :options="locations"
+        :options="locationOptions"
       />
       <line-chart
         :datasets="datasets"
@@ -48,6 +48,15 @@ export default {
     filteredData() {
       return this.data.filter(item => this.selected.includes(item.location));
     },
+    locations() {
+      const locations = [];
+      this.data.forEach((item) => {
+        if (!locations.includes(item.location)) {
+          locations.push(item.location);
+        }
+      });
+      return locations;
+    },
     dates() {
       const allDates = [];
       this.data.forEach((item) => {
@@ -57,14 +66,25 @@ export default {
       });
       return allDates.sort();
     },
-    locations() {
-      const locations = [];
-      this.data.forEach((item) => {
-        if (!locations.includes(item.location)) {
-          locations.push(item.location);
+    currentCounts() {
+      const counts = {};
+      this.locations.forEach((location) => {
+        const locationData = this.data.filter(item => item.location === location);
+        if (!locationData.length) {
+          counts[location] = 0;
+        } else {
+          counts[location] = locationData[locationData.length - 1].total_cases;
         }
       });
-      return locations;
+      return counts;
+    },
+    locationOptions() {
+      return [...this.locations]
+        .sort((a, b) => this.currentCounts[b] - this.currentCounts[a])
+        .map(location => ({
+          value: location,
+          label: `${location} (${this.currentCounts[location]})`,
+        }));
     },
     datasets() {
       const totalCases = {};

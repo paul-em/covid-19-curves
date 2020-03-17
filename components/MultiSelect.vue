@@ -1,20 +1,20 @@
 <template>
-  <div>
+  <div class="h-32 overflow-y-scroll">
     <div
       v-for="option in options"
-      :key="option"
-      class="m-1 inline-block"
+      :key="option.value"
+      class="m-1"
     >
       <input
-        :id="option"
-        :value="option"
-        :checked="value.includes(option)"
+        :id="option.value"
+        :value="option.value"
+        :checked="value.includes(option.value)"
         type="checkbox"
         @input="updateValue"
       >
       <label
-        :for="option"
-        class="pl-1 pr-3">{{ option }}</label>
+        :for="option.value"
+        class="pl-1 pr-3">{{ option.label }}</label>
     </div>
   </div>
 </template>
