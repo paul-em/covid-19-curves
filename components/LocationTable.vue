@@ -69,37 +69,47 @@ export default {
         {
           label: 'Location',
           value: 'location',
-          width: 250,
-        },
-        {
-          label: 'New Deaths',
-          value: 'new_deaths',
-          width: 120,
-        },
-        {
-          label: 'Total Deaths',
-          value: 'total_deaths',
-          width: 120,
-        },
-        {
-          label: 'Deaths/Million',
-          value: 'deaths_in_million',
-          width: 120,
+          width: 200,
         },
         {
           label: 'New Cases',
           value: 'new_cases',
-          width: 120,
+          width: 80,
         },
         {
           label: 'Total Cases',
           value: 'total_cases',
-          width: 120,
+          width: 80,
         },
         {
-          label: 'Cases/Million',
+          label: 'Cases / Million',
           value: 'cases_in_million',
-          width: 120,
+          width: 80,
+        },
+        {
+          label: 'Cases Doubled',
+          value: 'cases_doubled',
+          width: 80,
+        },
+        {
+          label: 'New Deaths',
+          value: 'new_deaths',
+          width: 80,
+        },
+        {
+          label: 'Total Deaths',
+          value: 'total_deaths',
+          width: 80,
+        },
+        {
+          label: 'Deaths / Million',
+          value: 'deaths_in_million',
+          width: 80,
+        },
+        {
+          label: 'Deaths Doubled',
+          value: 'deaths_doubled',
+          width: 80,
         },
       ];
     },
@@ -122,6 +132,8 @@ export default {
             new_deaths: parseInt(latest.new_deaths || 0, 10),
             total_cases: parseInt(latest.total_cases || 0, 10),
             total_deaths: parseInt(latest.total_deaths || 0, 10),
+            deaths_doubled: this.getDeathsDoubled(location),
+            cases_doubled: this.getCasesDoubled(location),
           };
         })
         .sort((a, b) => {
@@ -146,6 +158,12 @@ export default {
           location,
         ]);
       }
+    },
+    getDeathsDoubled() {
+      return 1;
+    },
+    getCasesDoubled() {
+      return 1;
     },
   },
 };

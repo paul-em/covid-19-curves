@@ -8,7 +8,7 @@
         'text-black': value.prop === column.value,
         'text-grey-dark': value.prop !== column.value,
       }"
-      class="cursor-pointer truncate inline-block font-semibold text-sm p-2"
+      class="cursor-pointer inline-block font-semibold text-sm p-2"
       @click="changeSorting(column.value)"
     >
       {{ column.label }}
