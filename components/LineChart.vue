@@ -10,15 +10,20 @@ import 'chart.js';
 
 export default {
   props: {
-    values: { type: Array, required: true },
+    datasets: { type: Array, required: true },
     labels: { type: Array, required: true },
   },
   data: () => ({
     chart: null,
   }),
   watch: {
-    values() {
-      this.updateValues();
+    datasets: {
+      deep: true,
+      handler() {
+        this.chart.data.labels = this.labels;
+        this.chart.data.datasets = this.datasets;
+        this.chart.update();
+      },
     },
   },
   mounted() {
@@ -26,12 +31,7 @@ export default {
       type: 'line',
       data: {
         labels: this.labels,
-        datasets: [
-          {
-            data: this.values,
-            backgroundColor: '#008DC9',
-          },
-        ],
+        datasets: this.datasets,
       },
       options: {
         legend: {
@@ -39,12 +39,6 @@ export default {
         },
       },
     });
-  },
-  methods: {
-    updateValues() {
-      this.chart.data.datasets[0].data = this.values;
-      this.chart.update();
-    },
   },
 };
 </script>

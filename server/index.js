@@ -2,7 +2,6 @@
 const express = require('express');
 const consola = require('consola');
 const { Nuxt, Builder } = require('nuxt');
-const fetchData = require('./fetchData');
 
 const app = express();
 const host = process.env.HOST || '127.0.0.1';
@@ -24,14 +23,6 @@ async function start() {
     const builder = new Builder(nuxt);
     await builder.build();
   }
-
-  app.get('/data.json', async (req, res) => {
-    try {
-      res.send(await fetchData());
-    } catch (err) {
-      res.send([]);
-    }
-  });
 
   // Give nuxt middleware to express
   app.use(nuxt.render);

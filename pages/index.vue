@@ -4,26 +4,87 @@
       <h1>
         COVID-19 Curves
       </h1>
-      <line-chart
-        :values="[]"
+      <multi-select
+        v-model="selected"
+        :options="locations"
       />
-      {{ data }}
+      <line-chart
+        :datasets="datasets"
+        :labels="dates"
+      />
     </div>
   </section>
 </template>
 
 <script>
+import csvParser from 'papaparse';
 import LineChart from '../components/LineChart.vue';
+import MultiSelect from '../components/MultiSelect.vue';
 
 export default {
-  async asyncData({ $axios }) {
-    const re = await $axios.get('/data.json');
-    return {
-      data: re.data,
-    };
-  },
   components: {
     LineChart,
+    MultiSelect,
+  },
+  async asyncData({ $axios }) {
+    const url = 'https://covid.ourworldindata.org/data/full_data.csv';
+    const re = await $axios.get(url);
+    const result = csvParser.parse(re.data, {
+      header: true,
+      skipEmptyLines: true,
+    });
+    if (result.errors && result.errors.length) {
+      console.error(result.errors);
+    }
+    return {
+      data: result.data,
+    };
+  },
+  data: () => ({
+    data: [],
+    selected: ['World'],
+  }),
+  computed: {
+    filteredData() {
+      return this.data.filter(item => this.selected.includes(item.location));
+    },
+    dates() {
+      const allDates = [];
+      this.data.forEach((item) => {
+        if (!allDates.includes(item.date)) {
+          allDates.push(item.date);
+        }
+      });
+      return allDates.sort();
+    },
+    locations() {
+      const locations = [];
+      this.data.forEach((item) => {
+        if (!locations.includes(item.location)) {
+          locations.push(item.location);
+        }
+      });
+      return locations;
+    },
+    datasets() {
+      const totalCases = {};
+      this.filteredData
+        .forEach((item) => {
+          if (!totalCases[item.location]) {
+            totalCases[item.location] = this.getEmptyDataset();
+          }
+          totalCases[item.location][this.dates.indexOf(item.date)] = item.total_cases;
+        });
+      return Object.keys(totalCases).map(location => ({
+        label: location,
+        data: totalCases[location],
+      }));
+    },
+  },
+  methods: {
+    getEmptyDataset() {
+      return this.dates.map(() => 0);
+    },
   },
 };
 </script>
