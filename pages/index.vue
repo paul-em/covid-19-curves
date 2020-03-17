@@ -1,24 +1,28 @@
 <template>
-  <div class="flex">
-    <section class="flex flex-col flex-1 h-screen">
+  <div class="flex flex-col lg:h-screen lg:overflow-hidden">
+    <header class="flex items-center p-8 min-h-72">
       <h1>
-        COVID-19 Curves
+        Corona Virus (COVID-19) Curves
       </h1>
-      <multi-select
-        v-model="selected"
-        :options="locationOptions"
-        class="flex-1"
-      />
-    </section>
-    <section class="flex flex-col flex-1 h-screen">
+      <a
+        class="p-4 text-blue no-underline"
+        href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">Data provided by WHO</a>
       <github-corner url="https://github.com/paul-em/covid-19-curves"/>
-      <div class="flex items-center flex-1">
+    </header>
+    <div class="flex flex-1 flex-col-reverse lg:flex-row">
+      <section class="flex flex-col flex-1">
+        <location-table
+          v-model="selected"
+          :data="data"
+          class="flex-1"/>
+      </section>
+      <section class="flex flex-col flex-1">
         <line-chart
           :datasets="datasets"
           :labels="dates"
         />
-      </div>
-    </section>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -26,12 +30,14 @@
 import csvParser from 'papaparse';
 import LineChart from '../components/LineChart.vue';
 import MultiSelect from '../components/MultiSelect.vue';
+import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
 
 export default {
   components: {
     LineChart,
     MultiSelect,
+    LocationTable,
     GithubCorner,
   },
   async asyncData({ $axios }) {
