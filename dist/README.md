@@ -1,5 +1,10 @@
-# Github Page for hosting of Covid 19 Curves Data Visualization
+# STATIC
 
-Available at [https://paul-em.github.io/covid-19-curves/](https://paul-em.github.io/covid-19-curves/)
+**This directory is not required, you can delete it if you don't want to use it.**
 
-Make sure to update all paths in the repository if you clone it.
+This directory contains your static files.
+Each file inside this directory is mapped to `/`.
+
+Example: `/static/robots.txt` is mapped as `/robots.txt`.
+
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/guide/assets#static).
