@@ -14,7 +14,8 @@
       <section class="flex flex-col lg:overflow-y-scroll overflow-x-auto">
         <location-table
           v-model="selected"
-          :data="data"/>
+          :data="data"
+          @columnSelect="updateSelectedColumn"/>
       </section>
       <section class="flex flex-col flex-1 mx-4">
         <line-chart
@@ -57,6 +58,7 @@ export default {
   data: () => ({
     data: [],
     selected: ['World'],
+    selectedColumn: 'total_cases',
   }),
   computed: {
     lastUpdate() {
@@ -64,15 +66,6 @@ export default {
     },
     filteredData() {
       return this.data.filter(item => this.selected.includes(item.location));
-    },
-    locations() {
-      const locations = [];
-      this.data.forEach((item) => {
-        if (!locations.includes(item.location)) {
-          locations.push(item.location);
-        }
-      });
-      return locations;
     },
     dates() {
       const allDates = [];
@@ -83,26 +76,6 @@ export default {
       });
       return allDates.sort();
     },
-    currentCounts() {
-      const counts = {};
-      this.locations.forEach((location) => {
-        const locationData = this.data.filter(item => item.location === location);
-        if (!locationData.length) {
-          counts[location] = 0;
-        } else {
-          counts[location] = locationData[locationData.length - 1].total_cases;
-        }
-      });
-      return counts;
-    },
-    locationOptions() {
-      return [...this.locations]
-        .sort((a, b) => this.currentCounts[b] - this.currentCounts[a])
-        .map(location => ({
-          value: location,
-          label: `${location} (${this.currentCounts[location]})`,
-        }));
-    },
     datasets() {
       const totalCases = {};
       this.filteredData
@@ -110,7 +83,7 @@ export default {
           if (!totalCases[item.location]) {
             totalCases[item.location] = this.getEmptyDataset();
           }
-          totalCases[item.location][this.dates.indexOf(item.date)] = item.total_cases;
+          totalCases[item.location][this.dates.indexOf(item.date)] = item[this.selectedColumn];
         });
       return Object.keys(totalCases).map(location => ({
         label: location,
@@ -123,6 +96,11 @@ export default {
   methods: {
     getEmptyDataset() {
       return this.dates.map(() => 0);
+    },
+    updateSelectedColumn(column) {
+      if (column !== 'location') {
+        this.selectedColumn = column;
+      }
     },
   },
 };

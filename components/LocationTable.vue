@@ -5,7 +5,9 @@
     <table-header
       v-model="sort"
       :columns="columns"
-      class="sticky top-0"/>
+      class="sticky top-0"
+      @input="v => $emit('columnSelect', v.prop)"
+    />
     <div>
       <table-row
         v-for="row in rows"
