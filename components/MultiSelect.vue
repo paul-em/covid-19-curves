@@ -5,6 +5,9 @@
       :key="option.value"
       class="m-1"
     >
+      <color-surface
+        :value="option.value"
+        class="w-8 inline-block"/>
       <input
         :id="option.value"
         :value="option.value"
@@ -20,7 +23,12 @@
 </template>
 
 <script>
+import ColorSurface from './ColorSurface.vue';
+
 export default {
+  components: {
+    ColorSurface,
+  },
   props: {
     value: { type: Array, default: () => [] },
     options: { type: Array, required: true },

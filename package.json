@@ -19,6 +19,7 @@
     "@nuxtjs/axios": "^5.0.0",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
+    "color-hash": "^1.0.3",
     "consola": "^2.11.3",
     "csv-parse": "^4.8.8",
     "express": "^4.16.3",

@@ -98,6 +98,8 @@ export default {
       return Object.keys(totalCases).map(location => ({
         label: location,
         data: totalCases[location],
+        backgroundColor: this.$color.rgba(location, 0.2),
+        borderColor: this.$color.rgba(location, 0.8),
       }));
     },
   },
