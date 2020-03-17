@@ -1,8 +1,15 @@
 <template>
-  <canvas
-    id="myChart"
-    ref="chart"
-  />
+  <div>
+    <canvas
+      id="myChart"
+      ref="chart"
+    />
+    <button
+      class="p-3 my-2 text-sm hover:bg-grey-lighter rounded-sm"
+      @click="toggleViewType">
+      Switch to {{ linear ? 'logarithmic' : 'linear' }} view
+    </button>
+  </div>
 </template>
 
 <script>
@@ -15,6 +22,7 @@ export default {
   },
   data: () => ({
     chart: null,
+    linear: true,
   }),
   watch: {
     datasets: {
@@ -37,8 +45,20 @@ export default {
         legend: {
           display: false,
         },
+        scales: {
+          yAxes: [{
+            type: this.linear ? 'linear' : 'logarithmic',
+          }],
+        },
       },
     });
+  },
+  methods: {
+    toggleViewType() {
+      this.linear = !this.linear;
+      this.chart.options.scales.yAxes[0].type = this.linear ? 'linear' : 'logarithmic';
+      this.chart.update();
+    },
   },
 };
 </script>
@@ -46,5 +66,6 @@ export default {
 <style lang="scss" scoped>
 canvas {
   width: 100%;
+  min-width: 360px
 }
 </style>
