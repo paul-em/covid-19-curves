@@ -1,6 +1,8 @@
-# covid-19-curves - WIP
+# COVID 19 Curves
 
-> Covid 19 Data Visualisation
+> Corona Virus COVID-19 Data Visualisation. Data is loaded from the Website of the World Health Organization.
+
+Available at [https://paul-em.github.io/covid-19-curves/](https://paul-em.github.io/covid-19-curves/)
 
 ## Build Setup
 
