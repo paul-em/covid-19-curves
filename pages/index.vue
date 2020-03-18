@@ -107,15 +107,30 @@ export default {
     const confirmedUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';
     const deathsUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv';
     const recoveredUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv';
-    const [
-      confirmedRaw,
-      deathsRaw,
-      recoveredRaw,
-    ] = await Promise.all([
-      $axios.get(confirmedUrl),
-      $axios.get(deathsUrl),
-      $axios.get(recoveredUrl),
-    ]);
+    let confirmedRaw;
+    let deathsRaw;
+    let recoveredRaw;
+    try {
+      [
+        confirmedRaw,
+        deathsRaw,
+        recoveredRaw,
+      ] = await Promise.all([
+        $axios.get(confirmedUrl),
+        $axios.get(deathsUrl),
+        $axios.get(recoveredUrl),
+      ]);
+    } catch (err) {
+      [
+        confirmedRaw,
+        deathsRaw,
+        recoveredRaw,
+      ] = await Promise.all([
+        $axios.get('/fallbacks/confirmed.csv'),
+        $axios.get('/fallbacks/deaths.csv'),
+        $axios.get('/fallbacks/recovered.csv'),
+      ]);
+    }
     const rawData = {
       confirmed: csvParser.parse(confirmedRaw.data, {
         header: true,
