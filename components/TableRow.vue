@@ -6,10 +6,10 @@
     <div
       v-for="column in columns"
       :key="column.value"
-      :style="{ width: `${column.width}px` }"
+      :style="getColumnStyles(column)"
       class="truncate inline-block text-sm p-2"
     >
-      {{ column.formatter ? column.formatter(row[column.value]): row[column.value] }}
+      {{ column.formatter ? column.formatter(row): row[column.value] }}
       <slot :name="`column-${column.value}`"/>
     </div>
   </div>
@@ -39,6 +39,21 @@ export default {
           desc: true,
         });
       }
+    },
+    getColumnStyles(column) {
+      const styles = {
+        width: `${column.width}px`,
+      };
+      if (column.serverity) {
+        const serverity = column.serverity(this.row);
+        if (serverity > 0.5) {
+          styles.color = '#e3342f';
+        }
+        if (serverity > 0.8) {
+          styles.fontSize = '1rem';
+        }
+      }
+      return styles;
     },
   },
 };
