@@ -88,7 +88,7 @@ export default {
   'Guinea-Bissau': 1861283,
   Guyana: 777859,
   Haiti: 10981229,
-  Vatican: 1000,
+  'Holy See': 1000,
   Honduras: 9265067,
   'Hong Kong': 7364883,
   Hungary: 9721559,

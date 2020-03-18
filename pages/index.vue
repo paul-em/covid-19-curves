@@ -1,22 +1,16 @@
 <template>
-  <div class="flex flex-col lg:h-screen lg:overflow-hidden">
+  <div class="flex flex-col">
     <header class="flex items-center p-8 min-h-72">
       <h1>
         Corona Virus (COVID-19) Curves
       </h1>
       <a
         class="p-4 text-blue no-underline"
-        href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">Data provided by WHO</a>
-      <span class="text-grey-dark">Updated: {{ lastUpdate }} 10am CET</span>
+        href="https://github.com/CSSEGISandData/COVID-19">Data provided by John Hopkins CSSE</a>
+      <span class="text-grey-dark">Updated: {{ lastUpdate }}</span>
       <github-corner url="https://github.com/paul-em/covid-19-curves"/>
     </header>
-    <div class="flex flex-1 flex-col-reverse lg:overflow-hidden lg:flex-row">
-      <section class="flex flex-col lg:overflow-y-scroll overflow-x-auto">
-        <location-table
-          v-model="selected"
-          :data="data"
-          @columnSelect="updateSelectedColumn"/>
-      </section>
+    <div>
       <section class="flex flex-col flex-1 m-4">
         <h3
           v-if="selected.length"
@@ -38,6 +32,12 @@
           :labels="dates"
         />
       </section>
+      <section class="flex flex-col">
+        <location-table
+          v-model="selected"
+          :data="data"
+          @columnSelect="updateSelectedColumn"/>
+      </section>
     </div>
   </div>
 </template>
@@ -50,41 +50,50 @@ import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
 import populations from '../assets/populations';
 
-function getAllDates(data) {
-  const allDates = [];
-  data.forEach((item) => {
-    if (!allDates.includes(item.date)) {
-      allDates.push(item.date);
-    }
-  });
-  return allDates.sort();
-}
-
-function getEmptyTimeline(dates) {
-  return dates.map(date => ({
-    date,
-  }));
-}
-
-function getDoubledValue(timeline, prop, value) {
-  const half = value / 2;
-  const halfIndex = timeline.findIndex(item => parseInt(item[prop] || 0, 10) >= half);
-  if (halfIndex !== -1) {
-    const fullIndex = timeline.findIndex(item => parseInt(item[prop] || 0, 10) === value);
-    return fullIndex - halfIndex + 1;
+function fill(num) {
+  if (num < 10) {
+    return `0${num}`;
   }
-  return null;
+  return `${num}`;
 }
-function getPercentChange(timeline, prop, date) {
-  const currentIndex = timeline.findIndex(item => item.date === date);
-  const prevIndex = currentIndex - 1;
-  if (!timeline[prevIndex]) {
+
+function getPrevDay(str) {
+  const d = new Date(str);
+  const prev = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
+  return `${prev.getMonth() + 1}/${prev.getDate()}/${prev.getFullYear() - 2000}`;
+}
+
+function getDoubledValue(timeline, day, metric) {
+  const value = timeline[day][metric];
+  const half = value / 2;
+  let currentDay = getPrevDay(day);
+  let dayCounter = 1;
+  let found = false;
+  while (timeline[currentDay]) {
+    if (timeline[currentDay][metric] < half) {
+      found = true;
+      break;
+    }
+    currentDay = getPrevDay(currentDay);
+    dayCounter += 1;
+  }
+  if (!found) {
+    return null;
+  }
+  return dayCounter;
+}
+
+function getPercentChange(currentValue, prevValue) {
+  if (prevValue === 0) {
     return 0;
   }
-  const currentValue = parseInt(timeline[currentIndex][prop] || 0, 10);
-  const prevValue = parseInt(timeline[prevIndex][prop] || 0, 10);
   const diff = currentValue - prevValue;
   return Math.round((diff / prevValue) * 100);
+}
+
+function formatDate(str) {
+  const d = new Date(str);
+  return `${d.getFullYear()}-${fill(d.getMonth() + 1)}-${fill(d.getDate())}`;
 }
 
 export default {
@@ -95,59 +104,172 @@ export default {
     GithubCorner,
   },
   async asyncData({ $axios }) {
-    const url = 'https://covid.ourworldindata.org/data/full_data.csv';
-    const re = await $axios.get(url);
-    const result = csvParser.parse(re.data, {
-      header: true,
-      skipEmptyLines: true,
-    });
-    if (result.errors && result.errors.length) {
-      console.error(result.errors);
+    const confirmedUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';
+    const deathsUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv';
+    const recoveredUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv';
+    let confirmedRaw;
+    let deathsRaw;
+    let recoveredRaw;
+    try {
+      [
+        confirmedRaw,
+        deathsRaw,
+        recoveredRaw,
+      ] = await Promise.all([
+        $axios.get(confirmedUrl),
+        $axios.get(deathsUrl),
+        $axios.get(recoveredUrl),
+      ]);
+    } catch (err) {
+      [
+        confirmedRaw,
+        deathsRaw,
+        recoveredRaw,
+      ] = await Promise.all([
+        $axios.get('https://paul-em.github.io/covid-19-curves/fallbacks/confirmed.csv'),
+        $axios.get('https://paul-em.github.io/covid-19-curves/fallbacks/deaths.csv'),
+        $axios.get('https://paul-em.github.io/covid-19-curves/fallbacks/recovered.csv'),
+      ]);
     }
-    const dates = getAllDates(result.data);
-    const locationTimelines = {};
-    result.data.forEach((item) => {
-      if (!locationTimelines[item.location]) {
-        locationTimelines[item.location] = getEmptyTimeline(dates);
-      }
-      const index = dates.indexOf(item.date);
-      locationTimelines[item.location][index] = item;
+    const rawData = {
+      confirmed: csvParser.parse(confirmedRaw.data, {
+        header: true,
+        skipEmptyLines: true,
+      }).data,
+      deaths: csvParser.parse(deathsRaw.data, {
+        header: true,
+        skipEmptyLines: true,
+      }).data,
+      recovered: csvParser.parse(recoveredRaw.data, {
+        header: true,
+        skipEmptyLines: true,
+      }).data,
+    };
+    const days = Object.keys(rawData.confirmed[0]).filter(i => ![
+      'Province/State',
+      'Country/Region',
+      'Lat',
+      'Long',
+    ].includes(i)).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    const locationData = {};
+    ['confirmed', 'deaths', 'recovered'].forEach((metric) => {
+      rawData[metric].forEach((item) => {
+        const location = item['Country/Region'];
+        if (!locationData[location]) {
+          locationData[location] = {};
+        }
+        days.forEach((day) => {
+          if (!locationData[location][day]) {
+            locationData[location][day] = {
+              confirmed: 0,
+              deaths: 0,
+              recovered: 0,
+            };
+          }
+          locationData[location][day][metric] += parseInt(item[day] || 0, 10);
+        });
+      });
     });
-    return {
-      data: result.data.map((item) => {
-        const totalCases = parseInt(item.total_cases || 0, 10);
-        const totalDeaths = parseInt(item.total_deaths || 0, 10);
-        const population = populations[item.location];
+    const flatData = [];
+    Object.keys(locationData).forEach((location) => {
+      days.forEach((day) => {
+        const dayData = locationData[location][day] || {
+          confirmed: 0,
+          deaths: 0,
+          recovered: 0,
+        };
+        const prevDayData = locationData[location][getPrevDay(day)] || {
+          confirmed: 0,
+          deaths: 0,
+          recovered: 0,
+        };
+        const newCases = dayData.confirmed - prevDayData.confirmed;
+        const newDeaths = dayData.deaths - prevDayData.deaths;
+        const newRecovered = dayData.recovered - prevDayData.recovered;
         let casesInMillion = null;
         let deathsInMillion = null;
+        const population = populations[location];
         if (population) {
-          casesInMillion = Math.round((totalCases / population) * 10000000) / 10;
-          deathsInMillion = Math.round((totalDeaths / population) * 10000000) / 10;
+          casesInMillion = Math.round((dayData.confirmed / population) * 10000000) / 10;
+          deathsInMillion = Math.round((dayData.deaths / population) * 10000000) / 10;
         }
-        const newCases = parseInt(item.new_cases || 0, 10);
-        const newDeaths = parseInt(item.new_deaths || 0, 10);
-        return {
-          ...item,
+        flatData.push({
+          location,
+          date: formatDate(day),
+          active_cases: dayData.confirmed - dayData.recovered - dayData.deaths,
           new_cases: newCases,
-          new_cases_percent: newCases ? getPercentChange(locationTimelines[item.location], 'total_cases', item.date) : 0,
+          new_cases_percent: newCases ? getPercentChange(
+            dayData.confirmed,
+            prevDayData.confirmed,
+          ) : 0,
           new_deaths: newDeaths,
-          new_deaths_percent: newDeaths ? getPercentChange(locationTimelines[item.location], 'total_deaths', item.date) : 0,
-          total_cases: totalCases,
-          total_deaths: totalDeaths,
+          new_deaths_percent: newDeaths ? getPercentChange(dayData.deaths, prevDayData.deaths) : 0,
+          total_cases: dayData.confirmed,
+          total_deaths: dayData.deaths,
           cases_in_million: casesInMillion,
           deaths_in_million: deathsInMillion,
-          cases_doubled: getDoubledValue(locationTimelines[item.location], 'total_cases', totalCases),
-          deaths_doubled: getDoubledValue(locationTimelines[item.location], 'total_deaths', totalDeaths),
+          cases_doubled: getDoubledValue(locationData[location], day, 'confirmed'),
+          deaths_doubled: getDoubledValue(locationData[location], day, 'deaths'),
+          new_recovered: newRecovered,
+          total_recovered: dayData.recovered,
+          recovered_percent: Math.round((dayData.recovered / dayData.confirmed) * 1000) / 10,
+          deaths_percent: Math.round((dayData.deaths / dayData.confirmed) * 1000) / 10,
+        });
+      });
+    });
+    const worldData = [];
+    flatData.forEach((item) => {
+      let worldDataItem = worldData.find(i => i.date === item.date);
+      if (!worldDataItem) {
+        worldDataItem = {
+          location: 'World',
+          date: item.date,
+          active_cases: 0,
+          new_cases: 0,
+          new_cases_percent: 0,
+          new_deaths: 0,
+          new_deaths_percent: 0,
+          total_cases: 0,
+          total_deaths: 0,
+          cases_in_million: 0,
+          deaths_in_million: 0,
+          cases_doubled: 0,
+          deaths_doubled: 0,
+          new_recovered: 0,
+          total_recovered: 0,
         };
-      }),
+        worldData.push(worldDataItem);
+      }
+      worldDataItem.active_cases += item.active_cases;
+      worldDataItem.new_cases += item.new_cases;
+      worldDataItem.new_deaths += item.new_deaths;
+      worldDataItem.total_cases += item.total_cases;
+      worldDataItem.total_deaths += item.total_deaths;
+      worldDataItem.new_recovered += item.new_recovered;
+      worldDataItem.total_recovered += item.total_recovered;
+    });
+    console.log(flatData);
+    return {
+      data: [
+        ...worldData.map(item => ({
+          ...item,
+          cases_in_million: Math.round((item.total_cases / populations.World) * 10000000) / 10,
+          deaths_in_million: Math.round((item.total_deaths / populations.World) * 10000000) / 10,
+          recovered_percent: Math.round((item.total_recovered / item.total_cases) * 1000) / 10,
+          deaths_percent: Math.round(
+            (item.total_deaths / item.total_cases) * 1000,
+          ) / 10,
+        })),
+        ...flatData,
+      ],
     };
   },
   data: () => ({
     data: [],
-    selected: ['World'],
+    selected: ['World', 'China', 'Italy', 'US'],
     selectedColumn: {
-      value: 'total_cases',
-      label: 'Total Cases',
+      value: 'active_cases',
+      label: 'Active Cases',
     },
   }),
   computed: {

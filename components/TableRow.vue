@@ -4,14 +4,12 @@
     v-on="$listeners"
   >
     <div
-      v-for="column in columns"
+      v-for="(column, index) in columns"
       :key="column.value"
-      :style="{ width: `${column.width}px` }"
+      :style="getColumnStyles(column, index)"
       class="truncate inline-block text-sm p-2"
     >
-      <span v-if="column.prefix">
-      {{ column.prefix(row[column.value]) }}</span>{{ row[column.value] }}<span
-        v-if="column.postfix">{{ column.postfix(row[column.value]) }}</span>
+      {{ column.formatter ? column.formatter(row): row[column.value] }}
       <slot :name="`column-${column.value}`"/>
     </div>
   </div>
@@ -41,6 +39,28 @@ export default {
           desc: true,
         });
       }
+    },
+    getColumnStyles(column, index) {
+      const styles = {};
+      if (index !== this.columns.length - 1) {
+        styles.width = `${column.width}px`;
+      }
+      if (column.serverity) {
+        const serverity = column.serverity(this.row);
+        if (serverity > 0.5) {
+          styles.color = '#e3342f';
+        }
+        if (serverity > 0.8) {
+          styles.fontSize = '1rem';
+        }
+        if (serverity < 0) {
+          styles.color = '#38c172';
+        }
+        if (serverity < -0.5) {
+          styles.fontSize = '1rem';
+        }
+      }
+      return styles;
     },
   },
 };

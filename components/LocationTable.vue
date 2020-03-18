@@ -1,11 +1,12 @@
 <template>
   <div
     :style="{ width: `${width}px` }"
+    class="m-auto"
   >
     <table-header
       v-model="sort"
       :columns="columns"
-      class="sticky table-header"
+      class="sticky top-0 z-10"
       @input="emitSortUpdate"
     />
     <div>
@@ -32,6 +33,7 @@
 import ColorSurface from './ColorSurface.vue';
 import TableHeader from './TableHeader.vue';
 import TableRow from './TableRow.vue';
+import populations from '../assets/populations';
 
 export default {
   components: {
@@ -45,7 +47,7 @@ export default {
   },
   data: () => ({
     sort: {
-      prop: 'total_cases',
+      prop: 'active_cases',
       desc: true,
     },
   }),
@@ -74,16 +76,28 @@ export default {
           static: true,
         },
         {
+          label: 'Active Cases',
+          value: 'active_cases',
+          width: 75,
+        },
+        {
           label: 'New Cases',
           value: 'new_cases',
           width: 75,
-          prefix: v => (v > 1 ? '+' : ''),
+          formatter: row => (row.new_cases > 1 ? `+${row.new_cases}` : ''),
+          serverity: (row) => {
+            const population = populations[row.location];
+            if (!population) {
+              return 0;
+            }
+            return Math.min(1, (row.new_cases / population) * 100000);
+          },
         },
         {
           label: '% New Cases',
           value: 'new_cases_percent',
           width: 75,
-          postfix: v => (v > 1 ? '%' : ''),
+          formatter: row => (row.new_cases_percent > 1 ? `${row.new_cases_percent}%` : ''),
         },
         {
           label: 'Total Cases',
@@ -94,24 +108,64 @@ export default {
           label: 'Cases / Million',
           value: 'cases_in_million',
           width: 75,
+          serverity: row => row.cases_in_million / 500,
         },
         {
           label: 'Cases Doubled',
           value: 'cases_doubled',
           width: 75,
-          postfix: v => (v > 1 ? ' days' : ' day'),
+          formatter: (row) => {
+            if (row.cases_doubled > 1) {
+              return `${row.cases_doubled} days`;
+            }
+            if (row.cases_doubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
+        },
+        {
+          label: 'New Recovered',
+          value: 'new_recovered',
+          width: 75,
+          formatter: row => (row.new_recovered > 1 ? `+${row.new_recovered}` : ''),
+          serverity: (row) => {
+            const population = populations[row.location];
+            if (!population) {
+              return 0;
+            }
+            return -Math.min(1, (row.new_recovered / population) * 100000);
+          },
+        },
+        {
+          label: 'Total Recovered',
+          value: 'total_recovered',
+          width: 75,
+        },
+        {
+          label: '% Recovered',
+          value: 'recovered_percent',
+          width: 75,
+          formatter: row => (row.recovered_percent > 1 ? `${row.recovered_percent}%` : ''),
         },
         {
           label: 'New Deaths',
           value: 'new_deaths',
           width: 75,
-          prefix: v => (v > 1 ? '+' : ''),
+          formatter: row => (row.new_deaths > 1 ? `+${row.new_deaths}` : ''),
+          serverity: (row) => {
+            const population = populations[row.location];
+            if (!population) {
+              return 0;
+            }
+            return Math.min(1, (row.new_cases / population) * 100000);
+          },
         },
         {
           label: '% New Deaths',
           value: 'new_deaths_percent',
           width: 75,
-          postfix: v => (v > 1 ? '%' : ''),
+          formatter: row => (row.new_deaths_percent > 1 ? `${row.new_deaths_percent}%` : ''),
         },
         {
           label: 'Total Deaths',
@@ -122,12 +176,27 @@ export default {
           label: 'Deaths / Million',
           value: 'deaths_in_million',
           width: 75,
+          serverity: row => row.deaths_in_million / 50,
         },
         {
           label: 'Deaths Doubled',
           value: 'deaths_doubled',
           width: 75,
-          postfix: v => (v > 1 ? ' days' : ' day'),
+          formatter: (row) => {
+            if (row.deaths_doubled > 1) {
+              return `${row.deaths_doubled} days`;
+            }
+            if (row.deaths_doubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
+        },
+        {
+          label: '% Deaths',
+          value: 'deaths_percent',
+          width: 75,
+          formatter: row => (row.deaths_percent > 1 ? `${row.deaths_percent}%` : ''),
         },
       ];
     },
@@ -183,8 +252,7 @@ export default {
 
 
 <style lang="scss" scoped>
-.table-header {
+.top-0 {
   top: 0;
-  z-index: 1;
 }
 </style>

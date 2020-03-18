@@ -50,6 +50,7 @@ export default {
             type: this.linear ? 'linear' : 'logarithmic',
           }],
         },
+        aspectRatio: 3,
       },
     });
   },
@@ -66,6 +67,6 @@ export default {
 <style lang="scss" scoped>
 canvas {
   width: 100%;
-  min-width: 360px
+  min-width: 360px;
 }
 </style>
