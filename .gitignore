@@ -76,3 +76,5 @@ typings/
 
 # IDE
 .idea
+
+static/sw.js
