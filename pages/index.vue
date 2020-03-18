@@ -248,7 +248,6 @@ export default {
       worldDataItem.new_recovered += item.new_recovered;
       worldDataItem.total_recovered += item.total_recovered;
     });
-    console.log(flatData);
     return {
       data: [
         ...worldData.map(item => ({
