@@ -5,7 +5,7 @@
     <table-header
       v-model="sort"
       :columns="columns"
-      class="sticky top-0"
+      class="sticky table-header"
       @input="emitSortUpdate"
     />
     <div>
@@ -171,4 +171,8 @@ export default {
 
 
 <style lang="scss" scoped>
+.table-header {
+  top: 0;
+  z-index: 1;
+}
 </style>
