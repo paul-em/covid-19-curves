@@ -50,6 +50,22 @@ import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
 import populations from '../assets/populations';
 
+function getAllDates(data) {
+  const allDates = [];
+  data.forEach((item) => {
+    if (!allDates.includes(item.date)) {
+      allDates.push(item.date);
+    }
+  });
+  return allDates.sort();
+}
+
+function getEmptyTimeline(dates) {
+  return dates.map(date => ({
+    date,
+  }));
+}
+
 function getDoubledValue(timeline, prop, value) {
   const half = value / 2;
   const halfIndex = timeline.findIndex(item => parseInt(item[prop] || 0, 10) >= half);
@@ -58,6 +74,17 @@ function getDoubledValue(timeline, prop, value) {
     return fullIndex - halfIndex + 1;
   }
   return null;
+}
+function getPercentChange(timeline, prop, date) {
+  const currentIndex = timeline.findIndex(item => item.date === date);
+  const prevIndex = currentIndex - 1;
+  if (!timeline[prevIndex]) {
+    return 0;
+  }
+  const currentValue = parseInt(timeline[currentIndex][prop] || 0, 10);
+  const prevValue = parseInt(timeline[prevIndex][prop] || 0, 10);
+  const diff = currentValue - prevValue;
+  return Math.round((diff / currentValue) * 100);
 }
 
 export default {
@@ -77,12 +104,14 @@ export default {
     if (result.errors && result.errors.length) {
       console.error(result.errors);
     }
+    const dates = getAllDates(result.data);
     const locationTimelines = {};
     result.data.forEach((item) => {
       if (!locationTimelines[item.location]) {
-        locationTimelines[item.location] = [];
+        locationTimelines[item.location] = getEmptyTimeline(dates);
       }
-      locationTimelines[item.location].push(item);
+      const index = dates.indexOf(item.date);
+      locationTimelines[item.location][index] = item;
     });
     return {
       data: result.data.map((item) => {
@@ -95,10 +124,14 @@ export default {
           casesInMillion = Math.round((totalCases / population) * 10000000) / 10;
           deathsInMillion = Math.round((totalDeaths / population) * 10000000) / 10;
         }
+        const newCases = parseInt(item.new_cases || 0, 10);
+        const newDeaths = parseInt(item.new_deaths || 0, 10);
         return {
           ...item,
-          new_cases: parseInt(item.new_cases || 0, 10),
-          new_deaths: parseInt(item.new_deaths || 0, 10),
+          new_cases: newCases,
+          new_cases_percent: newCases ? getPercentChange(locationTimelines[item.location], 'total_cases', item.date) : 0,
+          new_deaths: newDeaths,
+          new_deaths_percent: newDeaths ? getPercentChange(locationTimelines[item.location], 'total_deaths', item.date) : 0,
           total_cases: totalCases,
           total_deaths: totalDeaths,
           cases_in_million: casesInMillion,

@@ -80,6 +80,12 @@ export default {
           prefix: v => (v > 1 ? '+' : ''),
         },
         {
+          label: '% New Cases',
+          value: 'new_cases_percent',
+          width: 75,
+          postfix: v => (v > 1 ? '%' : ''),
+        },
+        {
           label: 'Total Cases',
           value: 'total_cases',
           width: 75,
@@ -100,6 +106,12 @@ export default {
           value: 'new_deaths',
           width: 75,
           prefix: v => (v > 1 ? '+' : ''),
+        },
+        {
+          label: '% New Deaths',
+          value: 'new_deaths_percent',
+          width: 75,
+          postfix: v => (v > 1 ? '%' : ''),
         },
         {
           label: 'Total Deaths',
