@@ -84,7 +84,7 @@ function getPercentChange(timeline, prop, date) {
   const currentValue = parseInt(timeline[currentIndex][prop] || 0, 10);
   const prevValue = parseInt(timeline[prevIndex][prop] || 0, 10);
   const diff = currentValue - prevValue;
-  return Math.round((diff / currentValue) * 100);
+  return Math.round((diff / prevValue) * 100);
 }
 
 export default {
