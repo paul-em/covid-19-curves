@@ -4,9 +4,9 @@
     v-on="$listeners"
   >
     <div
-      v-for="column in columns"
+      v-for="(column, index) in columns"
       :key="column.value"
-      :style="getColumnStyles(column)"
+      :style="getColumnStyles(column, index)"
       class="truncate inline-block text-sm p-2"
     >
       {{ column.formatter ? column.formatter(row): row[column.value] }}
@@ -40,10 +40,11 @@ export default {
         });
       }
     },
-    getColumnStyles(column) {
-      const styles = {
-        width: `${column.width}px`,
-      };
+    getColumnStyles(column, index) {
+      const styles = {};
+      if (index !== this.columns.length - 1) {
+        styles.width = `${column.width}px`;
+      }
       if (column.serverity) {
         const serverity = column.serverity(this.row);
         if (serverity > 0.5) {

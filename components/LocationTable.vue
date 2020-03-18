@@ -1,14 +1,14 @@
 <template>
   <div
     :style="{ width: `${width}px` }"
+    class="m-auto"
   >
     <table-header
       v-model="sort"
       :columns="columns"
-      class="sticky table-header"
       @input="emitSortUpdate"
     />
-    <div>
+    <div class="overflow-y-scroll overflow-x-auto scrolling-touch table-body">
       <table-row
         v-for="row in rows"
         :key="row.key"
@@ -46,7 +46,7 @@ export default {
   },
   data: () => ({
     sort: {
-      prop: 'total_cases',
+      prop: 'active_cases',
       desc: true,
     },
   }),
@@ -73,6 +73,11 @@ export default {
           value: 'location',
           width: 200,
           static: true,
+        },
+        {
+          label: 'Active Cases',
+          value: 'active_cases',
+          width: 75,
         },
         {
           label: 'New Cases',
@@ -108,7 +113,26 @@ export default {
           label: 'Cases Doubled',
           value: 'cases_doubled',
           width: 75,
-          formatter: row => (row.cases_doubled > 1 ? `${row.cases_doubled} days` : `${row.cases_doubled} day`),
+          formatter: (row) => {
+            if (row.cases_doubled > 1) {
+              return `${row.cases_doubled} days`;
+            }
+            if (row.cases_doubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
+        },
+        {
+          label: 'New Recovered',
+          value: 'new_recovered',
+          width: 75,
+          formatter: row => (row.new_recovered > 1 ? `+${row.new_recovered}` : ''),
+        },
+        {
+          label: 'Total Recovered',
+          value: 'total_recovered',
+          width: 75,
         },
         {
           label: 'New Deaths',
@@ -143,8 +167,16 @@ export default {
         {
           label: 'Deaths Doubled',
           value: 'deaths_doubled',
-          width: 75,
-          formatter: row => (row.deaths_doubled > 1 ? `${row.deaths_doubled} days` : `${row.deaths_doubled} day`),
+          width: 110,
+          formatter: (row) => {
+            if (row.deaths_doubled > 1) {
+              return `${row.deaths_doubled} days`;
+            }
+            if (row.deaths_doubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
         },
       ];
     },
@@ -200,8 +232,7 @@ export default {
 
 
 <style lang="scss" scoped>
-.table-header {
-  top: 0;
-  z-index: 1;
+.table-body {
+  height: calc(100vh - 48px);
 }
 </style>
