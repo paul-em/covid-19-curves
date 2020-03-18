@@ -77,13 +77,13 @@ export default {
           label: 'New Cases',
           value: 'new_cases',
           width: 75,
-          prefix: v => (v > 1 ? '+' : ''),
+          formatter: v => (v > 1 ? `+${v}` : ''),
         },
         {
           label: '% New Cases',
           value: 'new_cases_percent',
           width: 75,
-          postfix: v => (v > 1 ? '%' : ''),
+          formatter: v => (v > 1 ? `${v}%` : ''),
         },
         {
           label: 'Total Cases',
@@ -99,19 +99,19 @@ export default {
           label: 'Cases Doubled',
           value: 'cases_doubled',
           width: 75,
-          postfix: v => (v > 1 ? ' days' : ' day'),
+          formatter: v => (v > 1 ? `${v} days` : `${v} day`),
         },
         {
           label: 'New Deaths',
           value: 'new_deaths',
           width: 75,
-          prefix: v => (v > 1 ? '+' : ''),
+          formatter: v => (v > 1 ? `+${v}` : ''),
         },
         {
           label: '% New Deaths',
           value: 'new_deaths_percent',
           width: 75,
-          postfix: v => (v > 1 ? '%' : ''),
+          formatter: v => (v > 1 ? `${v}%` : ''),
         },
         {
           label: 'Total Deaths',
@@ -127,7 +127,7 @@ export default {
           label: 'Deaths Doubled',
           value: 'deaths_doubled',
           width: 75,
-          postfix: v => (v > 1 ? ' days' : ' day'),
+          formatter: v => (v > 1 ? `${v} days` : `${v} day`),
         },
       ];
     },
