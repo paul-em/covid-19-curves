@@ -1,6 +1,6 @@
 # COVID 19 Curves
 
-> Corona Virus COVID-19 Data Visualisation. Data is loaded from the [Website of the World Health Organization](https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/) via the CSV file provided.
+> Corona Virus COVID-19 Data Visualisation. Data is loaded from [Our World in Data](https://ourworldindata.org/coronavirus-source-data) via a CSV file which is createtd from data of the [Website of the World Health Organization](https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/).
 
 Available at [https://paul-em.github.io/covid-19-curves/](https://paul-em.github.io/covid-19-curves/)
 
