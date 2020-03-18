@@ -6,9 +6,10 @@
     <table-header
       v-model="sort"
       :columns="columns"
+      class="sticky top-0 z-10"
       @input="emitSortUpdate"
     />
-    <div class="overflow-y-scroll overflow-x-auto scrolling-touch table-body">
+    <div>
       <table-row
         v-for="row in rows"
         :key="row.key"
@@ -128,11 +129,24 @@ export default {
           value: 'new_recovered',
           width: 75,
           formatter: row => (row.new_recovered > 1 ? `+${row.new_recovered}` : ''),
+          serverity: (row) => {
+            const population = populations[row.location];
+            if (!population) {
+              return 0;
+            }
+            return -Math.min(1, (row.new_recovered / population) * 100000);
+          },
         },
         {
           label: 'Total Recovered',
           value: 'total_recovered',
           width: 75,
+        },
+        {
+          label: '% Recovered',
+          value: 'recovered_percent',
+          width: 75,
+          formatter: row => (row.recovered_percent > 1 ? `${row.recovered_percent}%` : ''),
         },
         {
           label: 'New Deaths',
@@ -167,7 +181,7 @@ export default {
         {
           label: 'Deaths Doubled',
           value: 'deaths_doubled',
-          width: 110,
+          width: 75,
           formatter: (row) => {
             if (row.deaths_doubled > 1) {
               return `${row.deaths_doubled} days`;
@@ -177,6 +191,12 @@ export default {
             }
             return '';
           },
+        },
+        {
+          label: '% Deaths',
+          value: 'deaths_percent',
+          width: 75,
+          formatter: row => (row.deaths_percent > 1 ? `${row.deaths_percent}%` : ''),
         },
       ];
     },
@@ -232,7 +252,7 @@ export default {
 
 
 <style lang="scss" scoped>
-.table-body {
-  height: calc(100vh - 48px);
+.top-0 {
+  top: 0;
 }
 </style>

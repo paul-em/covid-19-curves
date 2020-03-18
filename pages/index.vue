@@ -6,8 +6,8 @@
       </h1>
       <a
         class="p-4 text-blue no-underline"
-        href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">Data provided by WHO</a>
-      <span class="text-grey-dark">Updated: {{ lastUpdate }} 10am CET</span>
+        href="https://github.com/CSSEGISandData/COVID-19">Data provided by John Hopkins CSSE</a>
+      <span class="text-grey-dark">Updated: {{ lastUpdate }}</span>
       <github-corner url="https://github.com/paul-em/covid-19-curves"/>
     </header>
     <div>
@@ -197,6 +197,8 @@ export default {
           deaths_doubled: getDoubledValue(locationData[location], day, 'deaths'),
           new_recovered: newRecovered,
           total_recovered: dayData.recovered,
+          recovered_percent: Math.round((dayData.recovered / dayData.confirmed) * 1000) / 10,
+          deaths_percent: Math.round((dayData.deaths / dayData.confirmed) * 1000) / 10,
         });
       });
     });
@@ -234,7 +236,15 @@ export default {
     console.log(flatData);
     return {
       data: [
-        ...worldData,
+        ...worldData.map(item => ({
+          ...item,
+          cases_in_million: Math.round((item.total_cases / populations.World) * 10000000) / 10,
+          deaths_in_million: Math.round((item.total_deaths / populations.World) * 10000000) / 10,
+          recovered_percent: Math.round((item.total_recovered / item.total_cases) * 1000) / 10,
+          deaths_percent: Math.round(
+            (item.total_deaths / item.total_cases) * 1000,
+          ) / 10,
+        })),
         ...flatData,
       ],
     };

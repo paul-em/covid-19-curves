@@ -53,6 +53,12 @@ export default {
         if (serverity > 0.8) {
           styles.fontSize = '1rem';
         }
+        if (serverity < 0) {
+          styles.color = '#38c172';
+        }
+        if (serverity < -0.5) {
+          styles.fontSize = '1rem';
+        }
       }
       return styles;
     },
