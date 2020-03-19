@@ -141,9 +141,9 @@ export default {
         deathsRaw,
         recoveredRaw,
       ] = await Promise.all([
-        $axios.get('https://paul-em.github.io/covid-19-curves/fallbacks/confirmed.csv'),
-        $axios.get('https://paul-em.github.io/covid-19-curves/fallbacks/deaths.csv'),
-        $axios.get('https://paul-em.github.io/covid-19-curves/fallbacks/recovered.csv'),
+        $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${confirmedUrl}`),
+        $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${deathsUrl}`),
+        $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${recoveredUrl}`),
       ]);
     }
     const rawData = {
