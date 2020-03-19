@@ -207,8 +207,6 @@ export default {
         if (population) {
           casesInMillion = Math.round((dayData.confirmed / population) * 10000000) / 10;
           deathsInMillion = Math.round((dayData.deaths / population) * 10000000) / 10;
-        } else {
-          console.log('No population found for', location);
         }
         flatData.push({
           location,
