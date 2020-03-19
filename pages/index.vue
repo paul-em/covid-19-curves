@@ -7,9 +7,24 @@
       <a
         class="p-4 text-blue no-underline"
         href="https://github.com/CSSEGISandData/COVID-19">Data provided by John Hopkins CSSE</a>
-      <span class="text-grey-dark">Updated: {{ lastUpdate }}</span>
       <github-corner url="https://github.com/paul-em/covid-19-curves"/>
     </header>
+    <div class="mx-8 p-4 bg-grey-light rounded text-sm leading-normal">
+      <b>Disclaimer:</b> The data is continuously updated by <a
+        href="https://github.com/CSSEGISandData/COVID-19"
+        target="_blank">John Hopkins University</a>.
+        However, this does not mean that the data reflects the exact current figures.
+        Take all the data you see online with a grain of salt, as the numbers depend on
+        testing frequencies and many other factors.
+        This visualization should just provide insight into the trends of the curves.
+        All code used to create this visualization and the data is open source,
+        so you can
+      <a
+        href="https://github.com/paul-em/covid-19-curves"
+        target="_blank">
+        check everything</a>
+      yourself and contribute to its improvement.
+    </div>
     <div>
       <section class="flex flex-col flex-1 m-4">
         <h3
@@ -248,7 +263,6 @@ export default {
       worldDataItem.new_recovered += item.new_recovered;
       worldDataItem.total_recovered += item.total_recovered;
     });
-    console.log(flatData);
     return {
       data: [
         ...worldData.map(item => ({
