@@ -1,9 +1,12 @@
 <template>
   <div>
-    <canvas
-      id="myChart"
-      ref="chart"
-    />
+    <div class="chart-container relative">
+      <canvas
+        id="myChart"
+        ref="chart"
+        height="400"
+      />
+    </div>
     <button
       class="p-3 my-2 text-sm hover:bg-grey-lighter rounded-sm uppercase"
       @click="toggleViewType">
@@ -42,6 +45,7 @@ export default {
         datasets: this.datasets,
       },
       options: {
+        maintainAspectRatio: false,
         legend: {
           display: false,
         },
@@ -50,7 +54,6 @@ export default {
             type: this.linear ? 'linear' : 'logarithmic',
           }],
         },
-        aspectRatio: 3,
       },
     });
   },
@@ -67,6 +70,11 @@ export default {
 <style lang="scss" scoped>
 canvas {
   width: 100%;
+}
+
+.chart-container {
+  width: 100%;
   min-width: 360px;
+  height: 400px;
 }
 </style>
