@@ -81,7 +81,6 @@ export default {
       this.chart.update();
     },
     updateOffset(label, v) {
-      console.log('updateOffset', label, v);
       this.offsets = {
         ...this.offsets,
         [label]: v,
@@ -108,14 +107,12 @@ export default {
       }
       if (offset < 0) {
         const newArr = [...arr].slice(Math.abs(offset));
-        // newArr.push(...filler);
         return newArr;
       }
       const newArr = [
         ...filler,
         ...arr,
       ].slice(0, arr.length);
-      console.log(newArr);
       return newArr;
     },
   },
