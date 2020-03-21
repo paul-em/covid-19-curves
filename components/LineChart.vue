@@ -49,8 +49,7 @@ export default {
       deep: true,
       handler() {
         this.chart.data.labels = this.labels;
-        this.chart.data.datasets = this.datasets;
-        this.chart.update();
+        this.update();
       },
     },
   },
