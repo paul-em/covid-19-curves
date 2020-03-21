@@ -46,6 +46,10 @@
           :datasets="datasets"
           :labels="dates"
         />
+        <chart-options
+          :datasets="datasets"
+          :labels="dates"
+        />
       </section>
       <section class="flex flex-col">
         <location-table
@@ -64,6 +68,7 @@ import MultiSelect from '../components/MultiSelect.vue';
 import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
 import populations from '../assets/populations';
+import ChartOptions from '../components/ChartOptions.vue';
 
 function fill(num) {
   if (num < 10) {
@@ -117,6 +122,7 @@ export default {
     MultiSelect,
     LocationTable,
     GithubCorner,
+    ChartOptions,
   },
   async asyncData({ $axios }) {
     const confirmedUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';

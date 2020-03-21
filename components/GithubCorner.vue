@@ -1,5 +1,4 @@
 <template>
-
   <a
     :href="url"
     class="github-corner"
