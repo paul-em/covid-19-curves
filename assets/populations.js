@@ -193,7 +193,7 @@ export default {
   'Sao Tome and Principe': 204327,
   'Saudi Arabia': 32938213,
   Senegal: 15850567,
-  Serbia: 94737,
+  Serbia: 7000000,
   Seychelles: 94737,
   'Sierra Leone': 7557212,
   Singapore: 5708844,
