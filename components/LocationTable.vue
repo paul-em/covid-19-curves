@@ -12,16 +12,16 @@
     <div>
       <table-row
         v-for="row in rows"
-        :key="row.key"
+        :key="row.name"
         :columns="columns"
         :row="row"
-        :class="{ 'opacity-50': !value.includes(row.key) }"
+        :class="{ 'opacity-50': !value.includes(row.name) }"
         class="cursor-pointer hover:opacity-75"
-        @click="toggleSelection(row.key)">
+        @click="toggleSelection(row.name)">
         <color-surface
           slot="column-color"
-          :value="row.location"
-          :class="{ 'opacity-25': !value.includes(row.key) }"
+          :value="row.name"
+          :class="{ 'opacity-25': !value.includes(row.name) }"
           class="rounded-full"
         />
       </table-row>
@@ -33,7 +33,6 @@
 import ColorSurface from './ColorSurface.vue';
 import TableHeader from './TableHeader.vue';
 import TableRow from './TableRow.vue';
-import populations from '../assets/populations';
 
 export default {
   components: {
@@ -47,20 +46,11 @@ export default {
   },
   data: () => ({
     sort: {
-      prop: 'active_cases',
+      prop: 'active',
       desc: true,
     },
   }),
   computed: {
-    locations() {
-      const locations = [];
-      this.data.forEach((item) => {
-        if (!locations.includes(item.location)) {
-          locations.push(item.location);
-        }
-      });
-      return locations;
-    },
     columns() {
       return [
         {
@@ -71,45 +61,52 @@ export default {
         },
         {
           label: 'Location',
-          value: 'location',
+          value: 'name',
+          width: 200,
+          static: true,
+        },
+        {
+          label: 'Population',
+          value: 'population',
+          formatter: row => this.formatNumber(row.population),
           width: 200,
           static: true,
         },
         {
           label: 'Active Cases',
-          value: 'active_cases',
+          value: 'active',
           width: 75,
         },
         {
           label: 'New Cases',
-          value: 'new_cases',
+          value: 'newCases',
           width: 75,
-          formatter: row => (row.new_cases > 1 ? `+${row.new_cases}` : ''),
+          formatter: row => (row.newCases > 1 ? `+${row.newCases}` : ''),
           serverity: (row) => {
-            const population = populations[row.location];
-            if (!population) {
+            if (!row.population) {
               return 0;
             }
-            return Math.min(1, (row.new_cases / population) * 100000);
+            return Math.min(1, (row.new_cases / row.population) * 100000);
           },
         },
         {
           label: '% New Cases',
-          value: 'new_cases_percent',
+          value: 'newCasesPercent',
           width: 75,
-          formatter: row => (row.new_cases_percent > 1 ? `${row.new_cases_percent}%` : ''),
+          formatter: row => (row.newCasesPercent > 1 ? `${row.newCasesPercent}%` : ''),
         },
         {
           label: 'Total Cases',
-          value: 'total_cases',
+          value: 'cases',
           width: 75,
         },
         {
           label: 'Cases / Million',
-          value: 'cases_in_million',
+          value: 'casesInMillion',
           width: 75,
-          serverity: row => row.cases_in_million / 500,
+          serverity: row => row.casesInMillion / 500,
         },
+        /*
         {
           label: 'Cases Doubled',
           value: 'cases_doubled',
@@ -198,6 +195,7 @@ export default {
           width: 75,
           formatter: row => (row.deaths_percent > 1 ? `${row.deaths_percent}%` : ''),
         },
+        */
       ];
     },
     width() {
@@ -208,15 +206,7 @@ export default {
       return total;
     },
     rows() {
-      const rows = this.locations
-        .map((location) => {
-          const locationData = this.data.filter(item => item.location === location);
-          const latest = locationData[locationData.length - 1];
-          return {
-            ...latest,
-            key: latest.location,
-          };
-        })
+      const rows = [...this.data]
         .sort((a, b) => {
           if (typeof a[this.sort.prop] === 'string') {
             return a[this.sort.prop].localeCompare(b[this.sort.prop]);
@@ -245,6 +235,12 @@ export default {
       if (column && !column.static) {
         this.$emit('columnSelect', column);
       }
+    },
+    formatNumber(num) {
+      if (!num) {
+        return '';
+      }
+      return Math.floor(num).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
     },
   },
 };

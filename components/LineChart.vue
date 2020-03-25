@@ -7,22 +7,6 @@
         height="400"
       />
     </div>
-    <div class="p-2">
-      <div
-        v-for="dataset in datasets"
-        :key="dataset.label"
-        class="p-1">
-        Offset for {{ dataset.label }}:
-        <input
-          :value="getOffset(dataset.label)"
-          type="range"
-          name="vol"
-          min="-50"
-          max="50"
-          @input="e => updateOffset(dataset.label, e.target.value)">
-        {{ getOffset(dataset.label) }} Days
-      </div>
-    </div>
     <button
       class="p-3 my-2 text-sm hover:bg-grey-lighter rounded-sm uppercase"
       @click="toggleViewType">
@@ -42,7 +26,6 @@ export default {
   data: () => ({
     chart: null,
     linear: true,
-    offsets: {},
   }),
   watch: {
     datasets: {
@@ -79,40 +62,9 @@ export default {
       this.chart.options.scales.yAxes[0].type = this.linear ? 'linear' : 'logarithmic';
       this.chart.update();
     },
-    updateOffset(label, v) {
-      this.offsets = {
-        ...this.offsets,
-        [label]: v,
-      };
-      this.update();
-    },
     update() {
-      this.chart.data.datasets = this.datasets.map(dataset => ({
-        ...dataset,
-        data: this.shift(dataset.data, this.offsets[dataset.label]),
-      }));
+      this.chart.data.datasets = this.datasets;
       this.chart.update();
-    },
-    getOffset(label) {
-      return this.offsets[label] || 0;
-    },
-    shift(arr, offset) {
-      if (offset === 0) {
-        return arr;
-      }
-      const filler = [];
-      for (let i = 0; i < Math.abs(offset); i += 1) {
-        filler.push(0);
-      }
-      if (offset < 0) {
-        const newArr = [...arr].slice(Math.abs(offset));
-        return newArr;
-      }
-      const newArr = [
-        ...filler,
-        ...arr,
-      ].slice(0, arr.length);
-      return newArr;
     },
   },
 };
