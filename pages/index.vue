@@ -119,31 +119,25 @@ export default {
     GithubCorner,
   },
   async asyncData({ $axios }) {
-    const confirmedUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';
-    const deathsUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv';
-    const recoveredUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv';
+    const confirmedUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv';
+    const deathsUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv';
     let confirmedRaw;
     let deathsRaw;
-    let recoveredRaw;
     try {
       [
         confirmedRaw,
         deathsRaw,
-        recoveredRaw,
       ] = await Promise.all([
         $axios.get(confirmedUrl),
         $axios.get(deathsUrl),
-        $axios.get(recoveredUrl),
       ]);
     } catch (err) {
       [
         confirmedRaw,
         deathsRaw,
-        recoveredRaw,
       ] = await Promise.all([
         $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${confirmedUrl}`),
         $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${deathsUrl}`),
-        $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${recoveredUrl}`),
       ]);
     }
     const rawData = {
@@ -155,10 +149,6 @@ export default {
         header: true,
         skipEmptyLines: true,
       }).data,
-      recovered: csvParser.parse(recoveredRaw.data, {
-        header: true,
-        skipEmptyLines: true,
-      }).data,
     };
     const days = Object.keys(rawData.confirmed[0]).filter(i => ![
       'Province/State',
@@ -167,7 +157,7 @@ export default {
       'Long',
     ].includes(i)).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
     const locationData = {};
-    ['confirmed', 'deaths', 'recovered'].forEach((metric) => {
+    ['confirmed', 'deaths'].forEach((metric) => {
       rawData[metric].forEach((item) => {
         const location = item['Country/Region'];
         if (!locationData[location]) {
@@ -178,7 +168,6 @@ export default {
             locationData[location][day] = {
               confirmed: 0,
               deaths: 0,
-              recovered: 0,
             };
           }
           locationData[location][day][metric] += parseInt(item[day] || 0, 10);
@@ -191,16 +180,13 @@ export default {
         const dayData = locationData[location][day] || {
           confirmed: 0,
           deaths: 0,
-          recovered: 0,
         };
         const prevDayData = locationData[location][getPrevDay(day)] || {
           confirmed: 0,
           deaths: 0,
-          recovered: 0,
         };
         const newCases = dayData.confirmed - prevDayData.confirmed;
         const newDeaths = dayData.deaths - prevDayData.deaths;
-        const newRecovered = dayData.recovered - prevDayData.recovered;
         let casesInMillion = null;
         let deathsInMillion = null;
         const population = populations[location];
@@ -211,7 +197,7 @@ export default {
         flatData.push({
           location,
           date: formatDate(day),
-          active_cases: dayData.confirmed - dayData.recovered - dayData.deaths,
+          active_cases: dayData.confirmed - dayData.deaths,
           new_cases: newCases,
           new_cases_percent: newCases ? getPercentChange(
             dayData.confirmed,
@@ -225,9 +211,6 @@ export default {
           deaths_in_million: deathsInMillion,
           cases_doubled: getDoubledValue(locationData[location], day, 'confirmed'),
           deaths_doubled: getDoubledValue(locationData[location], day, 'deaths'),
-          new_recovered: newRecovered,
-          total_recovered: dayData.recovered,
-          recovered_percent: Math.round((dayData.recovered / dayData.confirmed) * 1000) / 10,
           deaths_percent: Math.round((dayData.deaths / dayData.confirmed) * 1000) / 10,
         });
       });
@@ -250,8 +233,6 @@ export default {
           deaths_in_million: 0,
           cases_doubled: 0,
           deaths_doubled: 0,
-          new_recovered: 0,
-          total_recovered: 0,
         };
         worldData.push(worldDataItem);
       }
@@ -260,8 +241,6 @@ export default {
       worldDataItem.new_deaths += item.new_deaths;
       worldDataItem.total_cases += item.total_cases;
       worldDataItem.total_deaths += item.total_deaths;
-      worldDataItem.new_recovered += item.new_recovered;
-      worldDataItem.total_recovered += item.total_recovered;
     });
     return {
       data: [
@@ -269,7 +248,6 @@ export default {
           ...item,
           cases_in_million: Math.round((item.total_cases / populations.World) * 10000000) / 10,
           deaths_in_million: Math.round((item.total_deaths / populations.World) * 10000000) / 10,
-          recovered_percent: Math.round((item.total_recovered / item.total_cases) * 1000) / 10,
           deaths_percent: Math.round(
             (item.total_deaths / item.total_cases) * 1000,
           ) / 10,

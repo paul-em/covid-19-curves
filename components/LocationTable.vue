@@ -125,30 +125,6 @@ export default {
           },
         },
         {
-          label: 'New Recovered',
-          value: 'new_recovered',
-          width: 75,
-          formatter: row => (row.new_recovered > 1 ? `+${row.new_recovered}` : ''),
-          serverity: (row) => {
-            const population = populations[row.location];
-            if (!population) {
-              return 0;
-            }
-            return -Math.min(1, (row.new_recovered / population) * 100000);
-          },
-        },
-        {
-          label: 'Total Recovered',
-          value: 'total_recovered',
-          width: 75,
-        },
-        {
-          label: '% Recovered',
-          value: 'recovered_percent',
-          width: 75,
-          formatter: row => (row.recovered_percent > 1 ? `${row.recovered_percent}%` : ''),
-        },
-        {
           label: 'New Deaths',
           value: 'new_deaths',
           width: 75,
