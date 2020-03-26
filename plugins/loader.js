@@ -2,11 +2,6 @@ import countryNames from '../assets/countryNames.json';
 
 const dataSource = 'https://coronadatascraper.cors-everywhere.workers.dev/';
 
-function formatDate(date) {
-  const d = new Date(date);
-  return `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
-}
-
 function getPercentChange(currentValue, prevValue) {
   if (prevValue === 0) {
     return 0;
@@ -50,8 +45,26 @@ function getDoubledValue(timeline, day, metric) {
 
 */
 
+const mildCasesRecoveryTime = 10;
+const servereCasesRecoveryTime = 30;
+const servereRate = 0.2;
 
-function prepareTimelineItem(population, item, prevItem) {
+function estimateNewRecovered(prevItems) {
+  let mildCases = 0;
+  const mildCasesInfectDay = prevItems[prevItems.length - mildCasesRecoveryTime];
+  if (mildCasesInfectDay) {
+    mildCases = mildCasesInfectDay.newCases * (1 - servereRate);
+  }
+  let servereCases = 0;
+  const servereCasesInfectDay = prevItems[prevItems.length - servereCasesRecoveryTime];
+  if (servereCasesInfectDay) {
+    servereCases = mildCasesInfectDay.newCases * servereRate;
+  }
+  return Math.round(mildCases + servereCases);
+}
+
+
+function prepareTimelineItem(population, item, prevItems) {
   if (!item) {
     return {};
   }
@@ -60,12 +73,13 @@ function prepareTimelineItem(population, item, prevItem) {
     deaths: item.deaths || 0,
     ...item,
   };
+  const prevItem = prevItems[prevItems.length - 1];
   if (prevItem) {
-    preparedItem.newCases = (item.cases || 0) - (prevItem.cases || 0);
+    preparedItem.newCases = preparedItem.cases - prevItem.cases;
     preparedItem.newCasesPercent = item.cases
       ? getPercentChange(item.cases, prevItem.cases)
       : 0;
-    preparedItem.newDeaths = (item.deaths || 0) - (prevItem.deaths || 0);
+    preparedItem.newDeaths = preparedItem.deaths - prevItem.deaths;
     preparedItem.newDeathsPercent = item.deaths
       ? getPercentChange(item.deaths, prevItem.deaths)
       : 0;
@@ -88,6 +102,31 @@ function prepareTimelineItem(population, item, prevItem) {
       (preparedItem.deaths / preparedItem.cases) * 10000,
     ) / 100;
   }
+
+  preparedItem.newRecovered = estimateNewRecovered(prevItems);
+  if (prevItem) {
+    preparedItem.recovered = prevItem.recovered + preparedItem.newRecovered;
+  } else {
+    preparedItem.recovered = 0;
+  }
+
+  preparedItem.recoveredPercent = Math.round(
+    (preparedItem.recovered / preparedItem.cases) * 1000,
+  ) / 10;
+
+  preparedItem.activeCases = preparedItem.cases - preparedItem.deaths - preparedItem.recovered;
+  if (prevItem) {
+    preparedItem.newActiveCases = preparedItem.activeCases - prevItem.activeCases;
+  } else {
+    preparedItem.newActiveCases = preparedItem.activeCases;
+  }
+
+  if (population) {
+    preparedItem.activeCasesInMillion = Math.round(
+      (preparedItem.activeCases / population) * 10000000,
+    ) / 10;
+  }
+
   return preparedItem;
 }
 
@@ -141,26 +180,29 @@ export default ({ $axios }, inject) => {
       Object
         .keys(data)
         .forEach((location) => {
-          timelines[location] = sortedDates.map((date) => {
+          const name = countryNames[location] || location;
+          timelines[name] = [];
+          sortedDates.forEach((date) => {
             const locationData = data[location];
-            const prevDate = formatDate(new Date(date).getTime() - 1000 * 60 * 60 * 24);
             const current = locationData.dates[date];
-            const prev = locationData.dates[prevDate];
-            return prepareTimelineItem(locationData.population, current, prev);
+            timelines[name].push(
+              prepareTimelineItem(locationData.population, current, timelines[name]),
+            );
           });
         });
 
       const current = Object
-        .keys(timelines)
+        .keys(data)
         .map((location) => {
-          const latestItem = timelines[location][sortedDates.length - 1];
+          const name = countryNames[location] || location;
+          const latestItem = timelines[name][sortedDates.length - 1];
           if (!latestItem || !latestItem.cases) {
             return null;
           }
           return {
             ...data[location],
             ...latestItem,
-            name: countryNames[location] || location,
+            name,
             location,
             population: data[location].population || 0,
           };

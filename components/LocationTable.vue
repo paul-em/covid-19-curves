@@ -12,16 +12,16 @@
     <div>
       <table-row
         v-for="row in rows"
-        :key="row.location"
+        :key="row.name"
         :columns="columns"
         :row="row"
-        :class="{ 'opacity-50': !value.includes(row.location) }"
+        :class="{ 'opacity-50': !value.includes(row.name) }"
         class="cursor-pointer hover:opacity-75"
-        @click="toggleSelection(row.location)">
+        @click="toggleSelection(row.name)">
         <color-surface
           slot="column-color"
-          :value="row.location"
-          :class="{ 'opacity-25': !value.includes(row.location) }"
+          :value="row.name"
+          :class="{ 'opacity-25': !value.includes(row.name) }"
           class="rounded-full"
         />
         <a
@@ -126,7 +126,7 @@ export default {
           },
         },
         {
-          label: 'Cases / Million',
+          label: 'Total Cases / Million',
           value: 'casesInMillion',
           width: 75,
           serverity: row => row.casesInMillion / 500,
@@ -141,7 +141,7 @@ export default {
           label: 'New Deaths',
           value: 'newDeaths',
           width: 75,
-          formatter: row => (row.newDeaths > 1 ? `+${row.newDeaths}` : ''),
+          formatter: row => (row.newDeaths > 0 ? `+${row.newDeaths}` : ''),
           serverity: (row) => {
             if (!row.population) {
               return 0;
@@ -153,9 +153,76 @@ export default {
           label: '% Deaths',
           value: 'deathsPercent',
           width: 75,
-          formatter: row => (row.deathsPercent > 1 ? `${row.deathsPercent}%` : ''),
+          formatter: row => (row.deathsPercent > 0 ? `${row.deathsPercent}%` : ''),
+        },
+        {
+          label: 'Active Cases',
+          value: 'activeCases',
+          formatter: row => this.formatNumber(row.activeCases),
+          width: 75,
+        },
+        {
+          label: 'Active Cases change',
+          value: 'newActiveCases',
+          width: 75,
+          formatter: row => (row.newActiveCases > 0 ? `+${row.newActiveCases}` : ''),
+          serverity: (row) => {
+            if (!row.population) {
+              return 0;
+            }
+            return Math.min(1, (row.newActiveCases / row.population) * 100000);
+          },
+        },
+        {
+          label: 'Active Cases / Million',
+          value: 'activeCasesInMillion',
+          width: 75,
+          serverity: row => row.activeCasesInMillion / 500,
+        },
+        {
+          label: 'New Recovered',
+          value: 'newRecovered',
+          width: 75,
+          formatter: row => (row.newRecovered > 1 ? `+${row.newRecovered}` : ''),
+          serverity: (row) => {
+            if (!row.population) {
+              return 0;
+            }
+            return -Math.min(1, (row.newRecovered / row.population) * 100000);
+          },
+        },
+        {
+          label: 'Total Recovered',
+          value: 'recovered',
+          width: 75,
+        },
+        {
+          label: '% Recovered',
+          value: 'recoveredPercent',
+          width: 75,
+          formatter: row => (row.recoveredPercent > 0 ? `${row.recoveredPercent}%` : ''),
         },
         /*
+        {
+          label: 'Cases Doubled',
+          value: 'cases_doubled',
+          width: 75,
+          formatter: (row) => {
+            if (row.cases_doubled > 1) {
+              return `${row.cases_doubled} days`;
+            }
+            if (row.cases_doubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
+        },
+        {
+          label: '% Recovered',
+          value: 'recovered_percent',
+          width: 75,
+          formatter: row => (row.recovered_percent > 1 ? `${row.recovered_percent}%` : ''),
+        },
         {
           label: 'Cases Doubled',
           value: 'cases_doubled',
@@ -262,13 +329,13 @@ export default {
     },
   },
   methods: {
-    toggleSelection(location) {
-      if (this.value.includes(location)) {
-        this.$emit('input', this.value.filter(selectedItem => selectedItem !== location));
+    toggleSelection(name) {
+      if (this.value.includes(name)) {
+        this.$emit('input', this.value.filter(selectedItem => selectedItem !== name));
       } else {
         this.$emit('input', [
           ...this.value,
-          location,
+          name,
         ]);
       }
     },
