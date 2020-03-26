@@ -9,41 +9,6 @@ function getPercentChange(currentValue, prevValue) {
   const diff = currentValue - prevValue;
   return Math.round((diff / prevValue) * 100);
 }
-/*
-function fill(num) {
-  if (num < 10) {
-    return `0${num}`;
-  }
-  return `${num}`;
-}
-
-function getPrevDay(str) {
-  const d = new Date(str);
-  const prev = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
-  return `${prev.getMonth() + 1}/${prev.getDate()}/${prev.getFullYear() - 2000}`;
-}
-
-function getDoubledValue(timeline, day, metric) {
-  const value = timeline[day][metric];
-  const half = value / 2;
-  let currentDay = getPrevDay(day);
-  let dayCounter = 1;
-  let found = false;
-  while (timeline[currentDay]) {
-    if (timeline[currentDay][metric] < half) {
-      found = true;
-      break;
-    }
-    currentDay = getPrevDay(currentDay);
-    dayCounter += 1;
-  }
-  if (!found) {
-    return null;
-  }
-  return dayCounter;
-}
-
-*/
 
 function getDoubledValue(prevItems, metric, currentValue) {
   const half = currentValue / 2;
