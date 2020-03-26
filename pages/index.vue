@@ -77,13 +77,18 @@ export default {
     timelines: {},
     timelineDates: [],
     current: [],
-    selected: ['Hubei, CHN', 'ITA', 'USA'],
-    selectedColumn: 'active',
+    selected: ['CHN', 'ITA', 'USA'],
+    selectedColumn: 'cases',
   }),
   computed: {
     datasets() {
       return this.selected
-        .map(location => this.timelines[location]);
+        .map(location => ({
+          label: location,
+          data: this.timelines[location].map(item => item[this.selectedColumn]),
+          backgroundColor: this.$color.rgba(location, 0.2),
+          borderColor: this.$color.rgba(location, 0.8),
+        }));
     },
   },
   methods: {
