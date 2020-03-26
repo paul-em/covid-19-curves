@@ -45,11 +45,28 @@ function getDoubledValue(timeline, day, metric) {
 
 */
 
+function getDoubledValue(prevItems, metric, currentValue) {
+  const half = currentValue / 2;
+  let dayCounter;
+  let found = false;
+  for (dayCounter = 1; dayCounter <= prevItems.length; dayCounter += 1) {
+    const item = prevItems[prevItems.length - dayCounter];
+    if (item[metric] <= half) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    return null;
+  }
+  return dayCounter;
+}
+
 const mildCasesRecoveryTime = 10;
 const servereCasesRecoveryTime = 30;
 const servereRate = 0.2;
 
-function estimateNewRecovered(prevItems) {
+function estimateNewRecovered(prevItems, newDeaths) {
   let mildCases = 0;
   const mildCasesInfectDay = prevItems[prevItems.length - mildCasesRecoveryTime];
   if (mildCasesInfectDay) {
@@ -58,9 +75,9 @@ function estimateNewRecovered(prevItems) {
   let servereCases = 0;
   const servereCasesInfectDay = prevItems[prevItems.length - servereCasesRecoveryTime];
   if (servereCasesInfectDay) {
-    servereCases = mildCasesInfectDay.newCases * servereRate;
+    servereCases = servereCasesInfectDay.newCases * servereRate;
   }
-  return Math.round(mildCases + servereCases);
+  return Math.round(mildCases + servereCases) - newDeaths;
 }
 
 
@@ -73,15 +90,17 @@ function prepareTimelineItem(population, item, prevItems) {
     deaths: item.deaths || 0,
     ...item,
   };
+  preparedItem.casesDoubled = getDoubledValue(prevItems, 'cases', preparedItem.cases);
+  preparedItem.deathsDoubled = getDoubledValue(prevItems, 'deaths', preparedItem.deaths);
   const prevItem = prevItems[prevItems.length - 1];
   if (prevItem) {
     preparedItem.newCases = preparedItem.cases - prevItem.cases;
-    preparedItem.newCasesPercent = item.cases
-      ? getPercentChange(item.cases, prevItem.cases)
+    preparedItem.newCasesPercent = preparedItem.cases
+      ? getPercentChange(preparedItem.cases, prevItem.cases)
       : 0;
     preparedItem.newDeaths = preparedItem.deaths - prevItem.deaths;
-    preparedItem.newDeathsPercent = item.deaths
-      ? getPercentChange(item.deaths, prevItem.deaths)
+    preparedItem.newDeathsPercent = preparedItem.deaths
+      ? getPercentChange(preparedItem.deaths, prevItem.deaths)
       : 0;
   } else {
     preparedItem.newCases = preparedItem.cases;
@@ -103,7 +122,10 @@ function prepareTimelineItem(population, item, prevItems) {
     ) / 100;
   }
 
-  preparedItem.newRecovered = estimateNewRecovered(prevItems);
+  preparedItem.newRecovered = estimateNewRecovered(
+    prevItems,
+    preparedItem.newDeaths,
+  );
   if (prevItem) {
     preparedItem.recovered = prevItem.recovered + preparedItem.newRecovered;
   } else {

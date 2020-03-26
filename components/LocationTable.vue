@@ -126,10 +126,31 @@ export default {
           },
         },
         {
+          label: '% New Cases',
+          value: 'newCasesPercent',
+          width: 90,
+          formatter: row => (row.newCasesPercent > 1 ? `${row.newCasesPercent}%` : ''),
+          serverity: row => Math.min(1, row.newCasesPercent / 30),
+        },
+        {
           label: 'Total Cases / Million',
           value: 'casesInMillion',
           width: 75,
           serverity: row => row.casesInMillion / 500,
+        },
+        {
+          label: 'Cases Doubled',
+          value: 'casesDoubled',
+          width: 75,
+          formatter: (row) => {
+            if (row.casesDoubled > 1) {
+              return `${row.casesDoubled} days`;
+            }
+            if (row.casesDoubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
         },
         {
           label: 'Total Deaths',
@@ -154,6 +175,28 @@ export default {
           value: 'deathsPercent',
           width: 75,
           formatter: row => (row.deathsPercent > 0 ? `${row.deathsPercent}%` : ''),
+          serverity: row => Math.min(1, row.deathsPercent / 10),
+        },
+        {
+          label: '% New Deaths',
+          value: 'newDeathsPercent',
+          width: 90,
+          formatter: row => (row.newDeathsPercent > 1 ? `${row.newDeathsPercent}%` : ''),
+          serverity: row => Math.min(1, row.newDeathsPercent / 30),
+        },
+        {
+          label: 'Deaths Doubled',
+          value: 'deathsDoubled',
+          width: 75,
+          formatter: (row) => {
+            if (row.deathsDoubled > 1) {
+              return `${row.deathsDoubled} days`;
+            }
+            if (row.deathsDoubled === 1) {
+              return '1 day';
+            }
+            return '';
+          },
         },
         {
           label: 'Active Cases',
@@ -202,103 +245,6 @@ export default {
           width: 75,
           formatter: row => (row.recoveredPercent > 0 ? `${row.recoveredPercent}%` : ''),
         },
-        /*
-        {
-          label: 'Cases Doubled',
-          value: 'cases_doubled',
-          width: 75,
-          formatter: (row) => {
-            if (row.cases_doubled > 1) {
-              return `${row.cases_doubled} days`;
-            }
-            if (row.cases_doubled === 1) {
-              return '1 day';
-            }
-            return '';
-          },
-        },
-        {
-          label: '% Recovered',
-          value: 'recovered_percent',
-          width: 75,
-          formatter: row => (row.recovered_percent > 1 ? `${row.recovered_percent}%` : ''),
-        },
-        {
-          label: 'Cases Doubled',
-          value: 'cases_doubled',
-          width: 75,
-          formatter: (row) => {
-            if (row.cases_doubled > 1) {
-              return `${row.cases_doubled} days`;
-            }
-            if (row.cases_doubled === 1) {
-              return '1 day';
-            }
-            return '';
-          },
-        },
-        {
-          label: 'New Recovered',
-          value: 'new_recovered',
-          width: 75,
-          formatter: row => (row.new_recovered > 1 ? `+${row.new_recovered}` : ''),
-          serverity: (row) => {
-            const population = populations[row.location];
-            if (!population) {
-              return 0;
-            }
-            return -Math.min(1, (row.new_recovered / population) * 100000);
-          },
-        },
-        {
-          label: 'Total Recovered',
-          value: 'total_recovered',
-          width: 75,
-        },
-        {
-          label: '% Recovered',
-          value: 'recovered_percent',
-          width: 75,
-          formatter: row => (row.recovered_percent > 1 ? `${row.recovered_percent}%` : ''),
-        },
-        {
-          label: '% New Deaths',
-          value: 'new_deaths_percent',
-          width: 75,
-          formatter: row => (row.new_deaths_percent > 1 ? `${row.new_deaths_percent}%` : ''),
-        },
-        {
-          label: 'Total Deaths',
-          value: 'total_deaths',
-          width: 75,
-        },
-        {
-          label: 'Deaths / Million',
-          value: 'deaths_in_million',
-          width: 75,
-          serverity: row => row.deaths_in_million / 50,
-        },
-        {
-          label: 'Deaths Doubled',
-          value: 'deaths_doubled',
-          width: 75,
-          formatter: (row) => {
-            if (row.deaths_doubled > 1) {
-              return `${row.deaths_doubled} days`;
-            }
-            if (row.deaths_doubled === 1) {
-              return '1 day';
-            }
-            return '';
-          },
-        },
-        {
-          label: '% Deaths',
-          value: 'deaths_percent',
-          width: 75,
-          formatter: row => (row.deaths_percent > 1 ? `${row.deaths_percent}%` : ''),
-        },
-        */
       ];
     },
     width() {
