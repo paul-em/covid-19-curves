@@ -34,7 +34,7 @@
           slot="column-regions"
           target="#"
           class="no-underline"
-          @click="toggleRegions(row.location)"
+          @click.stop="toggleRegions(row.location)"
         >{{ getRegionsCount(row.location) }}
           <expand-icon
             v-if="getRegionsCount(row.location)"
