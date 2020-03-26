@@ -47,7 +47,7 @@ export default {
   },
   data: () => ({
     sort: {
-      prop: 'active_cases',
+      prop: 'total_cases',
       desc: true,
     },
   }),
@@ -74,11 +74,6 @@ export default {
           value: 'location',
           width: 200,
           static: true,
-        },
-        {
-          label: 'Active Cases',
-          value: 'active_cases',
-          width: 75,
         },
         {
           label: 'New Cases',

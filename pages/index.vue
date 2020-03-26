@@ -197,7 +197,6 @@ export default {
         flatData.push({
           location,
           date: formatDate(day),
-          active_cases: dayData.confirmed - dayData.deaths,
           new_cases: newCases,
           new_cases_percent: newCases ? getPercentChange(
             dayData.confirmed,
@@ -222,7 +221,6 @@ export default {
         worldDataItem = {
           location: 'World',
           date: item.date,
-          active_cases: 0,
           new_cases: 0,
           new_cases_percent: 0,
           new_deaths: 0,
@@ -236,7 +234,6 @@ export default {
         };
         worldData.push(worldDataItem);
       }
-      worldDataItem.active_cases += item.active_cases;
       worldDataItem.new_cases += item.new_cases;
       worldDataItem.new_deaths += item.new_deaths;
       worldDataItem.total_cases += item.total_cases;
@@ -260,8 +257,8 @@ export default {
     data: [],
     selected: ['World', 'China', 'Italy', 'US'],
     selectedColumn: {
-      value: 'active_cases',
-      label: 'Active Cases',
+      value: 'total_cases',
+      label: 'Total Cases',
     },
   }),
   computed: {
