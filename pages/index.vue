@@ -1,44 +1,50 @@
 <template>
-  <div class="flex flex-col">
-    <header class="flex items-center p-8 min-h-72">
-      <h1>
-        Corona Virus (COVID-19) Curves
-      </h1>
-      <a
-        class="p-4 text-blue no-underline"
-        href="https://github.com/CSSEGISandData/COVID-19">Data provided by John Hopkins CSSE</a>
-      <github-corner url="https://github.com/paul-em/covid-19-curves"/>
-    </header>
+  <section>
+    <github-corner url="https://github.com/paul-em/covid-19-curves"/>
+    <h1 class="px-16 pt-16 max-w-xl">
+      Corona Virus Curves
+    </h1>
+    <p class="px-16 py-2">
+      Updated once per day <a
+        class="text-blue"
+        target="_blank"
+        href="https://coronadatascraper.com/">by Corona Data Scraper Project</a>
+    </p>
+    <div class="p-16">
+      <column-select
+        v-model="selectedColumn"
+        class="inline-block"/>
+      <span class="inline-block p-2">in</span>
+      <location-select
+        v-model="selectedLocations"
+        :locations="locations"
+        class="inline-block"/>
+    </div>
     <div>
-      <section class="flex flex-col flex-1 m-4">
-        <h3
-          v-if="selected.length"
-          class="m-4">{{ selectedColumn.label }} in
-          <span
-            v-for="location in selected"
-            :key="location"
-            :style="{ 'border-color': $color.hex(location) }"
-            class="border-b-2 mr-2">{{ location }}</span>
-        </h3>
-        <h3
-          v-else
-          class="m-4"
-        >
-          Select a Location to show data
-        </h3>
+      <section class="p-8">
         <line-chart
           :datasets="datasets"
           :labels="timelineDates"
         />
       </section>
-      <section class="flex flex-col">
+      <div
+        v-if="columnDisclaimer"
+        class="text-sm px-16 py-4 opacity-75">
+        {{ columnDisclaimer }}
+      </div>
+      <button
+        class="p-3 my-8 mx-16 text-sm bg-grey-light hover:bg-grey-lighter rounded-sm uppercase"
+        @click="showTable = !showTable">
+        {{ showTable ? 'Hide Table': 'Show Table' }}
+      </button>
+      <section v-if="showTable">
         <location-table
-          v-model="selected"
+          v-model="selectedLocations"
           :data="current"
           @columnSelect="updateSelectedColumn"/>
       </section>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
@@ -46,6 +52,9 @@ import LineChart from '../components/LineChart.vue';
 import MultiSelect from '../components/MultiSelect.vue';
 import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
+import LocationSelect from '../components/LocationSelect.vue';
+import ColumnSelect from '../components/ColumnSelect.vue';
+import columns from '../components/columns';
 
 export default {
   components: {
@@ -53,6 +62,8 @@ export default {
     MultiSelect,
     LocationTable,
     GithubCorner,
+    LocationSelect,
+    ColumnSelect,
   },
   async asyncData({ app: { $loader } }) {
     return $loader.loadCases();
@@ -61,26 +72,60 @@ export default {
     timelines: {},
     timelineDates: [],
     current: [],
-    selected: ['China', 'Italy', 'United States'],
-    selectedColumn: {
-      label: 'Total Cases',
-      value: 'cases',
-    },
+    selectedLocations: ['China', 'Italy', 'United States', 'Spain'],
+    selectedColumn: 'activeCases',
+    showTable: false,
   }),
   computed: {
+    locations() {
+      return Object.keys(this.timelines);
+    },
     datasets() {
-      return this.selected
+      return this.selectedLocations
         .map(name => ({
           label: name,
-          data: this.timelines[name].map(item => item[this.selectedColumn.value]),
+          data: this.timelines[name].map(item => item[this.selectedColumn]),
           backgroundColor: this.$color.rgba(name, 0.2),
           borderColor: this.$color.rgba(name, 0.8),
         }));
     },
+    columnDisclaimer() {
+      const match = columns.find(column => column.value === this.selectedColumn);
+      if (!match) {
+        return '';
+      }
+      return match.disclaimer;
+    },
+  },
+  watch: {
+    selectedLocations() {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          shown: this.selectedLocations,
+        },
+      });
+    },
+    selectedColumn() {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          column: this.selectedColumn,
+        },
+      });
+    },
+  },
+  mounted() {
+    if (this.$route.query.shown) {
+      this.selectedLocations = this.$route.query.shown;
+    }
+    if (this.$route.query.column) {
+      this.selectedColumn = this.$route.query.column;
+    }
   },
   methods: {
     updateSelectedColumn(column) {
-      this.selectedColumn = column;
+      this.selectedColumn = column.value;
     },
   },
 };

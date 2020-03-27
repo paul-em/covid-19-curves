@@ -7,11 +7,6 @@
         height="400"
       />
     </div>
-    <button
-      class="p-3 my-2 text-sm hover:bg-grey-lighter rounded-sm uppercase"
-      @click="toggleViewType">
-      {{ linear ? 'linear' : 'logarithmic' }}
-    </button>
   </div>
 </template>
 
@@ -48,9 +43,13 @@ export default {
         legend: {
           display: false,
         },
+        tooltips: {
+          enabled: true,
+          displayColors: false,
+        },
         scales: {
           yAxes: [{
-            type: this.linear ? 'linear' : 'logarithmic',
+            type: 'linear',
           }],
         },
       },

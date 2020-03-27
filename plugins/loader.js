@@ -16,7 +16,7 @@ function getDoubledValue(prevItems, metric, currentValue) {
   let found = false;
   for (dayCounter = 1; dayCounter <= prevItems.length; dayCounter += 1) {
     const item = prevItems[prevItems.length - dayCounter];
-    if (item[metric] <= half) {
+    if (item && item[metric] <= half) {
       found = true;
       break;
     }
@@ -48,7 +48,7 @@ function estimateNewRecovered(prevItems, newDeaths) {
 
 function prepareTimelineItem(population, item, prevItems) {
   if (!item) {
-    return {};
+    return null;
   }
   const preparedItem = {
     cases: item.cases || 0,
@@ -91,6 +91,9 @@ function prepareTimelineItem(population, item, prevItems) {
     prevItems,
     preparedItem.newDeaths,
   );
+  if (Number.isNaN(preparedItem.newDeaths)) {
+    console.log('newDeaths is NaN', preparedItem.deaths, prevItem);
+  }
   if (prevItem) {
     preparedItem.recovered = prevItem.recovered + preparedItem.newRecovered;
   } else {
