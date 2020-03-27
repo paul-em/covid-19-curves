@@ -1,4 +1,4 @@
-const recoveredDisclaimer = 'Recovered cases are caluclated by assuming a certain recovery times for new cases.';
+const recoveredDisclaimer = 'Recovered cases are caluclated by assuming recovery times of 10 days for mild cases and 30 days for servere cases as well as a serverity rate of 20%';
 
 
 function formatNumber(num) {
