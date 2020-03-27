@@ -1,115 +1,60 @@
 <template>
-  <div class="flex flex-col">
-    <header class="flex items-center p-8 min-h-72">
-      <h1>
-        Corona Virus (COVID-19) Curves
-      </h1>
-      <a
-        class="p-4 text-blue no-underline"
-        href="https://github.com/CSSEGISandData/COVID-19">Data provided by John Hopkins CSSE</a>
-      <github-corner url="https://github.com/paul-em/covid-19-curves"/>
-    </header>
-    <div class="mx-8 p-4 bg-grey-light rounded text-sm leading-normal">
-      <b>Disclaimer:</b> The data is continuously updated by <a
-        href="https://github.com/CSSEGISandData/COVID-19"
-        target="_blank">John Hopkins University</a>.
-        However, this does not mean that the data reflects the exact current figures.
-        Take all the data you see online with a grain of salt, as the numbers depend on
-        testing frequencies and many other factors.
-        This visualization should just provide insight into the trends of the curves.
-        All code used to create this visualization and the data is open source,
-        so you can
-      <a
-        href="https://github.com/paul-em/covid-19-curves"
-        target="_blank">
-        check everything</a>
-      yourself and contribute to its improvement.
+  <section>
+    <github-corner url="https://github.com/paul-em/covid-19-curves"/>
+    <h1 class="px-16 pt-16 max-w-xl">
+      Corona Virus Curves
+    </h1>
+    <p class="px-16 py-2">
+      Updated once per day <a
+        class="text-blue"
+        target="_blank"
+        href="https://coronadatascraper.com/">by Corona Data Scraper Project</a>
+    </p>
+    <div class="p-16">
+      <column-select
+        v-model="selectedColumn"
+        class="inline-block"/>
+      <span class="inline-block p-2">in</span>
+      <location-select
+        v-model="selectedLocations"
+        :locations="locations"
+        class="inline-block"/>
     </div>
     <div>
-      <section class="flex flex-col flex-1 m-4">
-        <h3
-          v-if="selected.length"
-          class="m-4">{{ selectedColumn.label }} in
-          <span
-            v-for="location in selected"
-            :key="location"
-            :style="{ 'border-color': $color.hex(location) }"
-            class="border-b-2 mr-2">{{ location }}</span>
-        </h3>
-        <h3
-          v-else
-          class="m-4"
-        >
-          Select a Location to show data
-        </h3>
+      <section class="p-8">
         <line-chart
           :datasets="datasets"
-          :labels="dates"
+          :labels="timelineDates"
         />
       </section>
-      <section class="flex flex-col">
+      <div
+        v-if="columnDisclaimer"
+        class="text-sm px-16 py-4 opacity-75">
+        {{ columnDisclaimer }}
+      </div>
+      <button
+        class="p-3 my-8 mx-16 text-sm bg-grey-light hover:bg-grey-lighter rounded-sm uppercase"
+        @click="showTable = !showTable">
+        {{ showTable ? 'Hide Table': 'Show Table' }}
+      </button>
+      <section v-if="showTable">
         <location-table
-          v-model="selected"
-          :data="data"
+          v-model="selectedLocations"
+          :data="current"
           @columnSelect="updateSelectedColumn"/>
       </section>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
-import csvParser from 'papaparse';
 import LineChart from '../components/LineChart.vue';
 import MultiSelect from '../components/MultiSelect.vue';
 import LocationTable from '../components/LocationTable.vue';
 import GithubCorner from '../components/GithubCorner.vue';
-import populations from '../assets/populations';
-
-function fill(num) {
-  if (num < 10) {
-    return `0${num}`;
-  }
-  return `${num}`;
-}
-
-function getPrevDay(str) {
-  const d = new Date(str);
-  const prev = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
-  return `${prev.getMonth() + 1}/${prev.getDate()}/${prev.getFullYear() - 2000}`;
-}
-
-function getDoubledValue(timeline, day, metric) {
-  const value = timeline[day][metric];
-  const half = value / 2;
-  let currentDay = getPrevDay(day);
-  let dayCounter = 1;
-  let found = false;
-  while (timeline[currentDay]) {
-    if (timeline[currentDay][metric] < half) {
-      found = true;
-      break;
-    }
-    currentDay = getPrevDay(currentDay);
-    dayCounter += 1;
-  }
-  if (!found) {
-    return null;
-  }
-  return dayCounter;
-}
-
-function getPercentChange(currentValue, prevValue) {
-  if (prevValue === 0) {
-    return 0;
-  }
-  const diff = currentValue - prevValue;
-  return Math.round((diff / prevValue) * 100);
-}
-
-function formatDate(str) {
-  const d = new Date(str);
-  return `${d.getFullYear()}-${fill(d.getMonth() + 1)}-${fill(d.getDate())}`;
-}
+import LocationSelect from '../components/LocationSelect.vue';
+import ColumnSelect from '../components/ColumnSelect.vue';
+import columns from '../components/columns';
 
 export default {
   components: {
@@ -117,190 +62,70 @@ export default {
     MultiSelect,
     LocationTable,
     GithubCorner,
+    LocationSelect,
+    ColumnSelect,
   },
-  async asyncData({ $axios }) {
-    const confirmedUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv';
-    const deathsUrl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv';
-    let confirmedRaw;
-    let deathsRaw;
-    try {
-      [
-        confirmedRaw,
-        deathsRaw,
-      ] = await Promise.all([
-        $axios.get(confirmedUrl),
-        $axios.get(deathsUrl),
-      ]);
-    } catch (err) {
-      [
-        confirmedRaw,
-        deathsRaw,
-      ] = await Promise.all([
-        $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${confirmedUrl}`),
-        $axios.get(`https://nameless-shadow-474c.cors-everywhere.workers.dev/?${deathsUrl}`),
-      ]);
-    }
-    const rawData = {
-      confirmed: csvParser.parse(confirmedRaw.data, {
-        header: true,
-        skipEmptyLines: true,
-      }).data,
-      deaths: csvParser.parse(deathsRaw.data, {
-        header: true,
-        skipEmptyLines: true,
-      }).data,
-    };
-    const days = Object.keys(rawData.confirmed[0]).filter(i => ![
-      'Province/State',
-      'Country/Region',
-      'Lat',
-      'Long',
-    ].includes(i)).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    const locationData = {};
-    ['confirmed', 'deaths'].forEach((metric) => {
-      rawData[metric].forEach((item) => {
-        const location = item['Country/Region'];
-        if (!locationData[location]) {
-          locationData[location] = {};
-        }
-        days.forEach((day) => {
-          if (!locationData[location][day]) {
-            locationData[location][day] = {
-              confirmed: 0,
-              deaths: 0,
-            };
-          }
-          locationData[location][day][metric] += parseInt(item[day] || 0, 10);
-        });
-      });
-    });
-    const flatData = [];
-    Object.keys(locationData).forEach((location) => {
-      days.forEach((day) => {
-        const dayData = locationData[location][day] || {
-          confirmed: 0,
-          deaths: 0,
-        };
-        const prevDayData = locationData[location][getPrevDay(day)] || {
-          confirmed: 0,
-          deaths: 0,
-        };
-        const newCases = dayData.confirmed - prevDayData.confirmed;
-        const newDeaths = dayData.deaths - prevDayData.deaths;
-        let casesInMillion = null;
-        let deathsInMillion = null;
-        const population = populations[location];
-        if (population) {
-          casesInMillion = Math.round((dayData.confirmed / population) * 10000000) / 10;
-          deathsInMillion = Math.round((dayData.deaths / population) * 10000000) / 10;
-        }
-        flatData.push({
-          location,
-          date: formatDate(day),
-          new_cases: newCases,
-          new_cases_percent: newCases ? getPercentChange(
-            dayData.confirmed,
-            prevDayData.confirmed,
-          ) : 0,
-          new_deaths: newDeaths,
-          new_deaths_percent: newDeaths ? getPercentChange(dayData.deaths, prevDayData.deaths) : 0,
-          total_cases: dayData.confirmed,
-          total_deaths: dayData.deaths,
-          cases_in_million: casesInMillion,
-          deaths_in_million: deathsInMillion,
-          cases_doubled: getDoubledValue(locationData[location], day, 'confirmed'),
-          deaths_doubled: getDoubledValue(locationData[location], day, 'deaths'),
-          deaths_percent: Math.round((dayData.deaths / dayData.confirmed) * 1000) / 10,
-        });
-      });
-    });
-    const worldData = [];
-    flatData.forEach((item) => {
-      let worldDataItem = worldData.find(i => i.date === item.date);
-      if (!worldDataItem) {
-        worldDataItem = {
-          location: 'World',
-          date: item.date,
-          new_cases: 0,
-          new_cases_percent: 0,
-          new_deaths: 0,
-          new_deaths_percent: 0,
-          total_cases: 0,
-          total_deaths: 0,
-          cases_in_million: 0,
-          deaths_in_million: 0,
-          cases_doubled: 0,
-          deaths_doubled: 0,
-        };
-        worldData.push(worldDataItem);
-      }
-      worldDataItem.new_cases += item.new_cases;
-      worldDataItem.new_deaths += item.new_deaths;
-      worldDataItem.total_cases += item.total_cases;
-      worldDataItem.total_deaths += item.total_deaths;
-    });
-    return {
-      data: [
-        ...worldData.map(item => ({
-          ...item,
-          cases_in_million: Math.round((item.total_cases / populations.World) * 10000000) / 10,
-          deaths_in_million: Math.round((item.total_deaths / populations.World) * 10000000) / 10,
-          deaths_percent: Math.round(
-            (item.total_deaths / item.total_cases) * 1000,
-          ) / 10,
-        })),
-        ...flatData,
-      ],
-    };
+  async asyncData({ app: { $loader } }) {
+    return $loader.loadCases();
   },
   data: () => ({
-    data: [],
-    selected: ['World', 'China', 'Italy', 'US'],
-    selectedColumn: {
-      value: 'total_cases',
-      label: 'Total Cases',
-    },
+    timelines: {},
+    timelineDates: [],
+    current: [],
+    selectedLocations: ['China', 'Italy', 'United States', 'Spain'],
+    selectedColumn: 'activeCases',
+    showTable: false,
   }),
   computed: {
-    lastUpdate() {
-      return this.dates[this.dates.length - 1];
-    },
-    filteredData() {
-      return this.data.filter(item => this.selected.includes(item.location));
-    },
-    dates() {
-      const allDates = [];
-      this.data.forEach((item) => {
-        if (!allDates.includes(item.date)) {
-          allDates.push(item.date);
-        }
-      });
-      return allDates.sort();
+    locations() {
+      return Object.keys(this.timelines);
     },
     datasets() {
-      const totalCases = {};
-      this.filteredData
-        .forEach((item) => {
-          if (!totalCases[item.location]) {
-            totalCases[item.location] = this.getEmptyDataset();
-          }
-          const index = this.dates.indexOf(item.date);
-          totalCases[item.location][index] = item[this.selectedColumn.value];
-        });
-      return Object.keys(totalCases).map(location => ({
-        label: location,
-        data: totalCases[location],
-        backgroundColor: this.$color.rgba(location, 0.2),
-        borderColor: this.$color.rgba(location, 0.8),
-      }));
+      return this.selectedLocations
+        .map(name => ({
+          label: name,
+          data: this.timelines[name].map(item => item[this.selectedColumn]),
+          backgroundColor: this.$color.rgba(name, 0.2),
+          borderColor: this.$color.rgba(name, 0.8),
+        }));
+    },
+    columnDisclaimer() {
+      const match = columns.find(column => column.value === this.selectedColumn);
+      if (!match) {
+        return '';
+      }
+      return match.disclaimer;
     },
   },
-  methods: {
-    getEmptyDataset() {
-      return this.dates.map(() => 0);
+  watch: {
+    selectedLocations() {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          shown: this.selectedLocations,
+        },
+      });
     },
+    selectedColumn() {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          column: this.selectedColumn,
+        },
+      });
+    },
+  },
+  mounted() {
+    if (this.$route.query.shown) {
+      this.selectedLocations = this.$route.query.shown;
+    }
+    if (this.$route.query.column) {
+      this.selectedColumn = this.$route.query.column;
+    }
+  },
+  methods: {
     updateSelectedColumn(column) {
-      this.selectedColumn = column;
+      this.selectedColumn = column.value;
     },
   },
 };

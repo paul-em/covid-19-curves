@@ -12,34 +12,69 @@
     <div>
       <table-row
         v-for="row in rows"
-        :key="row.key"
+        :key="row.name"
         :columns="columns"
         :row="row"
-        :class="{ 'opacity-50': !value.includes(row.key) }"
+        :class="{ 'opacity-50': !value.includes(row.name) }"
         class="cursor-pointer hover:opacity-75"
-        @click="toggleSelection(row.key)">
+        @click="toggleSelection(row.name)">
         <color-surface
           slot="column-color"
-          :value="row.location"
-          :class="{ 'opacity-25': !value.includes(row.key) }"
+          :value="row.name"
+          :class="{ 'opacity-25': !value.includes(row.name) }"
           class="rounded-full"
         />
+        <a
+          slot="column-source"
+          :href="row.url"
+          target="_blank"
+          class="no-underline"
+        >🔗</a>
+        <a
+          slot="column-regions"
+          target="#"
+          class="no-underline"
+          @click.stop="toggleRegions(row.location)"
+        >{{ getRegionsCount(row.location) }}
+          <expand-icon
+            v-if="getRegionsCount(row.location)"
+            :expanded="row.location === selectedCountry"/></a>
       </table-row>
     </div>
   </div>
 </template>
 
 <script>
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 import ColorSurface from './ColorSurface.vue';
 import TableHeader from './TableHeader.vue';
 import TableRow from './TableRow.vue';
-import populations from '../assets/populations';
+import ExpandIcon from './ExpandIcon.vue';
+import columns from './columns';
+import countryNames from '../assets/countryNames.json';
+
+
+function formatPopulation(num) {
+  if (!num) {
+    return '';
+  }
+  if (num < 100000) {
+    return `${Math.round(num / 10000) / 100}M`;
+  }
+  if (num < 1000000) {
+    return `${Math.round(num / 100000) / 10}M`;
+  }
+  return `${Math.round(num / 1000000)}M`;
+}
 
 export default {
   components: {
     ColorSurface,
     TableHeader,
     TableRow,
+    ExpandIcon,
+    vSelect,
   },
   props: {
     value: { type: Array, default: () => [] },
@@ -47,20 +82,12 @@ export default {
   },
   data: () => ({
     sort: {
-      prop: 'total_cases',
+      prop: 'cases',
       desc: true,
     },
+    selectedCountry: null,
   }),
   computed: {
-    locations() {
-      const locations = [];
-      this.data.forEach((item) => {
-        if (!locations.includes(item.location)) {
-          locations.push(item.location);
-        }
-      });
-      return locations;
-    },
     columns() {
       return [
         {
@@ -70,105 +97,31 @@ export default {
           static: true,
         },
         {
+          label: '',
+          value: 'source',
+          width: 24,
+          static: true,
+        },
+        {
           label: 'Location',
-          value: 'location',
+          value: 'name',
           width: 200,
           static: true,
         },
         {
-          label: 'New Cases',
-          value: 'new_cases',
-          width: 75,
-          formatter: row => (row.new_cases > 1 ? `+${row.new_cases}` : ''),
-          serverity: (row) => {
-            const population = populations[row.location];
-            if (!population) {
-              return 0;
-            }
-            return Math.min(1, (row.new_cases / population) * 100000);
-          },
+          label: 'Regions',
+          value: 'regions',
+          width: 70,
+          static: true,
         },
         {
-          label: '% New Cases',
-          value: 'new_cases_percent',
-          width: 75,
-          formatter: row => (row.new_cases_percent > 1 ? `${row.new_cases_percent}%` : ''),
+          label: 'Population',
+          value: 'population',
+          formatter: row => formatPopulation(row.population),
+          width: 80,
+          static: true,
         },
-        {
-          label: 'Total Cases',
-          value: 'total_cases',
-          width: 75,
-        },
-        {
-          label: 'Cases / Million',
-          value: 'cases_in_million',
-          width: 75,
-          serverity: row => row.cases_in_million / 500,
-        },
-        {
-          label: 'Cases Doubled',
-          value: 'cases_doubled',
-          width: 75,
-          formatter: (row) => {
-            if (row.cases_doubled > 1) {
-              return `${row.cases_doubled} days`;
-            }
-            if (row.cases_doubled === 1) {
-              return '1 day';
-            }
-            return '';
-          },
-        },
-        {
-          label: 'New Deaths',
-          value: 'new_deaths',
-          width: 75,
-          formatter: row => (row.new_deaths > 1 ? `+${row.new_deaths}` : ''),
-          serverity: (row) => {
-            const population = populations[row.location];
-            if (!population) {
-              return 0;
-            }
-            return Math.min(1, (row.new_cases / population) * 100000);
-          },
-        },
-        {
-          label: '% New Deaths',
-          value: 'new_deaths_percent',
-          width: 75,
-          formatter: row => (row.new_deaths_percent > 1 ? `${row.new_deaths_percent}%` : ''),
-        },
-        {
-          label: 'Total Deaths',
-          value: 'total_deaths',
-          width: 75,
-        },
-        {
-          label: 'Deaths / Million',
-          value: 'deaths_in_million',
-          width: 75,
-          serverity: row => row.deaths_in_million / 50,
-        },
-        {
-          label: 'Deaths Doubled',
-          value: 'deaths_doubled',
-          width: 75,
-          formatter: (row) => {
-            if (row.deaths_doubled > 1) {
-              return `${row.deaths_doubled} days`;
-            }
-            if (row.deaths_doubled === 1) {
-              return '1 day';
-            }
-            return '';
-          },
-        },
-        {
-          label: '% Deaths',
-          value: 'deaths_percent',
-          width: 75,
-          formatter: row => (row.deaths_percent > 1 ? `${row.deaths_percent}%` : ''),
-        },
+        ...columns,
       ];
     },
     width() {
@@ -178,37 +131,42 @@ export default {
       });
       return total;
     },
+    filteredData() {
+      if (!this.selectedCountry) {
+        return this.data.filter(item => !!countryNames[item.location]);
+      }
+      return this.data.filter(item => item.country === this.selectedCountry);
+    },
     rows() {
-      const rows = this.locations
-        .map((location) => {
-          const locationData = this.data.filter(item => item.location === location);
-          const latest = locationData[locationData.length - 1];
-          return {
-            ...latest,
-            key: latest.location,
-          };
-        })
+      const rows = [...this.filteredData]
         .sort((a, b) => {
           if (typeof a[this.sort.prop] === 'string') {
             return a[this.sort.prop].localeCompare(b[this.sort.prop]);
           }
-          return a[this.sort.prop] - b[this.sort.prop];
+          return (a[this.sort.prop] || 0) - (b[this.sort.prop] || 0);
         });
       if (this.sort.desc) {
-        return rows.reverse();
+        return rows.reverse().slice(0, 50);
       }
-      return rows;
+      return rows.slice(0, 50);
     },
   },
   methods: {
-    toggleSelection(location) {
-      if (this.value.includes(location)) {
-        this.$emit('input', this.value.filter(selectedItem => selectedItem !== location));
+    toggleSelection(name) {
+      if (this.value.includes(name)) {
+        this.$emit('input', this.value.filter(selectedItem => selectedItem !== name));
       } else {
         this.$emit('input', [
           ...this.value,
-          location,
+          name,
         ]);
+      }
+    },
+    toggleRegions(country) {
+      if (this.selectedCountry === country) {
+        this.selectedCountry = null;
+      } else {
+        this.selectedCountry = country;
       }
     },
     emitSortUpdate(sort) {
@@ -216,6 +174,11 @@ export default {
       if (column && !column.static) {
         this.$emit('columnSelect', column);
       }
+    },
+    getRegionsCount(location) {
+      return this.data
+        .filter(item => item.country === location && item.location !== location)
+        .length || '';
     },
   },
 };

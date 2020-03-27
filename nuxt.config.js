@@ -62,6 +62,7 @@ module.exports = {
   */
   plugins: [
     '~/plugins/color',
+    '~/plugins/loader',
   ],
 
   /*
