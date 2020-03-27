@@ -63,7 +63,9 @@ export default {
         }).search(this.search);
         return result.slice(0, 20).map(r => r.item.value);
       }
-      return this.notSelectedLocations.filter(location => countryNames.includes(location));
+      return this.notSelectedLocations
+        .filter(location => countryNames.includes(location))
+        .sort();
     },
   },
   methods: {
