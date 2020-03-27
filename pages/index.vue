@@ -30,7 +30,7 @@
       <div
         v-if="columnDisclaimer"
         class="text-sm px-16 py-4 opacity-75">
-        {{ columnDisclaimer }}
+        * {{ columnDisclaimer }}
       </div>
       <button
         class="p-3 my-8 mx-16 text-sm bg-grey-light hover:bg-grey-lighter rounded-sm uppercase"

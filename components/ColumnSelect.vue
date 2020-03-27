@@ -38,7 +38,14 @@ export default {
       return columns;
     },
     selectedColumn() {
-      return columns.find(column => column.value === this.value);
+      const match = columns.find(column => column.value === this.value);
+      if (match && match.disclaimer) {
+        return {
+          ...match,
+          label: `${match.label} *`,
+        };
+      }
+      return match;
     },
   },
   methods: {
@@ -61,6 +68,7 @@ export default {
 .column-select .vs__selected {
   border-bottom: 2px solid black;
   border-radius: 0;
+  padding: 0;
 }
 
 
