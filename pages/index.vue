@@ -117,7 +117,11 @@ export default {
   },
   mounted() {
     if (this.$route.query.shown) {
-      this.selectedLocations = this.$route.query.shown;
+      if (Array.isArray(this.$route.query.shown)) {
+        this.selectedLocations = this.$route.query.shown;
+      } else {
+        this.selectedLocations = [this.$route.query.shown];
+      }
     }
     if (this.$route.query.column) {
       this.selectedColumn = this.$route.query.column;

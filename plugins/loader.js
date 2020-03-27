@@ -42,7 +42,7 @@ function estimateNewRecovered(prevItems, newDeaths) {
   if (servereCasesInfectDay) {
     servereCases = servereCasesInfectDay.newCases * servereRate;
   }
-  return Math.round(mildCases + servereCases) - newDeaths;
+  return Math.max(0, Math.round(mildCases + servereCases) - newDeaths);
 }
 
 
@@ -104,7 +104,10 @@ function prepareTimelineItem(population, item, prevItems) {
     (preparedItem.recovered / preparedItem.cases) * 1000,
   ) / 10;
 
-  preparedItem.activeCases = preparedItem.cases - preparedItem.deaths - preparedItem.recovered;
+  preparedItem.activeCases = Math.max(
+    0,
+    preparedItem.cases - preparedItem.deaths - preparedItem.recovered,
+  );
   if (prevItem) {
     preparedItem.newActiveCases = preparedItem.activeCases - prevItem.activeCases;
   } else {
