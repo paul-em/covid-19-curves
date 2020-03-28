@@ -121,6 +121,7 @@ function prepareTimelineItem(population, item, prevItems) {
   }
 
   preparedItem.reportedActiveCases = item.active;
+  preparedItem.reportedRecovered = item.recovered;
 
   return preparedItem;
 }

@@ -135,6 +135,12 @@ export default [
     disclaimer: recoveredDisclaimer,
   },
   {
+    label: 'Reported Recovered',
+    value: 'reportedRecovered',
+    formatter: row => formatNumber(row.reportedRecovered),
+    width: 75,
+  },
+  {
     label: 'New Recovered *',
     value: 'newRecovered',
     width: 75,
