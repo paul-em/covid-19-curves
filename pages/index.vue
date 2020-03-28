@@ -55,6 +55,7 @@ import GithubCorner from '../components/GithubCorner.vue';
 import LocationSelect from '../components/LocationSelect.vue';
 import ColumnSelect from '../components/ColumnSelect.vue';
 import columns from '../components/columns';
+import countryNames from '../assets/countryNames.json';
 
 export default {
   components: {
@@ -72,8 +73,8 @@ export default {
     timelines: {},
     timelineDates: [],
     current: [],
-    selectedLocations: ['China', 'Italy', 'United States', 'Spain'],
-    selectedColumn: 'cases',
+    selectedLocations: [],
+    selectedColumn: null,
     showTable: false,
   }),
   computed: {
@@ -99,37 +100,48 @@ export default {
   },
   watch: {
     selectedLocations() {
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          shown: this.selectedLocations,
-        },
-      });
+      this.updateQueryParams();
     },
     selectedColumn() {
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          column: this.selectedColumn,
-        },
-      });
+      this.updateQueryParams();
     },
   },
   mounted() {
+    if (this.$route.query.column) {
+      this.selectedColumn = this.$route.query.column;
+    } else {
+      this.selectedColumn = 'cases';
+    }
     if (this.$route.query.shown) {
       if (Array.isArray(this.$route.query.shown)) {
         this.selectedLocations = this.$route.query.shown;
       } else {
         this.selectedLocations = [this.$route.query.shown];
       }
-    }
-    if (this.$route.query.column) {
-      this.selectedColumn = this.$route.query.column;
+    } else {
+      const sorted = [...this.current]
+        .sort((a, b) => (b[this.selectedColumn] || 0) - (a[this.selectedColumn] || 0));
+      this.selectedLocations = [];
+      sorted.some((item) => {
+        if (countryNames[item.location]) {
+          this.selectedLocations.push(item.name);
+        }
+        return this.selectedLocations.length === 5;
+      });
     }
   },
   methods: {
     updateSelectedColumn(column) {
       this.selectedColumn = column.value;
+    },
+    updateQueryParams() {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          shown: this.selectedLocations,
+          column: this.selectedColumn,
+        },
+      });
     },
   },
 };
