@@ -73,7 +73,7 @@ export default {
     timelineDates: [],
     current: [],
     selectedLocations: ['China', 'Italy', 'United States', 'Spain'],
-    selectedColumn: 'activeCases',
+    selectedColumn: 'cases',
     showTable: false,
   }),
   computed: {
