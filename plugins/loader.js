@@ -120,6 +120,8 @@ function prepareTimelineItem(population, item, prevItems) {
     ) / 10;
   }
 
+  preparedItem.reportedActiveCases = item.active;
+
   return preparedItem;
 }
 

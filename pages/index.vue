@@ -84,7 +84,7 @@ export default {
       return this.selectedLocations
         .map(name => ({
           label: name,
-          data: this.timelines[name].map(item => item[this.selectedColumn]),
+          data: this.timelines[name].map(item => (item ? item[this.selectedColumn] : null)),
           backgroundColor: this.$color.rgba(name, 0.2),
           borderColor: this.$color.rgba(name, 0.8),
         }));

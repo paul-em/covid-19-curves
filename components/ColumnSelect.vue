@@ -38,14 +38,7 @@ export default {
       return columns;
     },
     selectedColumn() {
-      const match = columns.find(column => column.value === this.value);
-      if (match && match.disclaimer) {
-        return {
-          ...match,
-          label: `${match.label} *`,
-        };
-      }
-      return match;
+      return columns.find(column => column.value === this.value);
     },
   },
   methods: {
