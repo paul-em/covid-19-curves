@@ -73,10 +73,10 @@ function prepareTimelineItem(population, item, prevItems) {
     if (prevItem.newCases === 0) {
       preparedItem.growthRate = 1;
     } else {
-      preparedItem.growthRate = Math.max(
+      preparedItem.growthRate = Math.round(Math.max(
         0,
         Math.min(10, (preparedItem.newCases || 0) / (prevItem.newCases || 0)),
-      );
+      ) * 100) / 100;
     }
   } else {
     preparedItem.newCases = preparedItem.cases;
