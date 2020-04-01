@@ -77,6 +77,12 @@ export default [
     },
   },
   {
+    label: 'Deaths / Million',
+    value: 'deathsInMillion',
+    width: 75,
+    serverity: row => row.deathsInMillion / 50,
+  },
+  {
     label: '% Deaths',
     value: 'deathsPercent',
     width: 75,
@@ -114,10 +120,13 @@ export default [
     label: 'Active Cases change',
     value: 'newActiveCases',
     width: 75,
-    formatter: row => (row.newActiveCases > 0 ? `+${row.newActiveCases}` : ''),
+    formatter: row => (row.newActiveCases > 0 ? `+${row.newActiveCases}` : row.newActiveCases || ''),
     serverity: (row) => {
       if (!row.population) {
         return 0;
+      }
+      if (row.newActiveCases < 0) {
+        return -1;
       }
       return Math.min(1, (row.newActiveCases / row.population) * 100000);
     },

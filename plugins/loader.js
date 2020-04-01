@@ -124,6 +124,9 @@ function prepareTimelineItem(population, item, prevItems) {
     preparedItem.activeCasesInMillion = Math.round(
       (preparedItem.activeCases / population) * 10000000,
     ) / 10;
+    preparedItem.deathsInMillion = Math.round(
+      (preparedItem.deaths / population) * 10000000,
+    ) / 10;
   }
 
   return preparedItem;
