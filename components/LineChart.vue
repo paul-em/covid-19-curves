@@ -6,6 +6,7 @@
         ref="chart"
         height="400"
       />
+      <input>
     </div>
   </div>
 </template>

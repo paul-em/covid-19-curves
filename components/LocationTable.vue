@@ -25,12 +25,6 @@
           class="rounded-full"
         />
         <a
-          slot="column-source"
-          :href="row.url"
-          target="_blank"
-          class="no-underline"
-        >🔗</a>
-        <a
           slot="column-regions"
           target="#"
           class="no-underline"
@@ -52,7 +46,6 @@ import TableHeader from './TableHeader.vue';
 import TableRow from './TableRow.vue';
 import ExpandIcon from './ExpandIcon.vue';
 import columns from './columns';
-import countryNames from '../assets/countryNames.json';
 
 
 function formatPopulation(num) {
@@ -97,12 +90,6 @@ export default {
           static: true,
         },
         {
-          label: '',
-          value: 'source',
-          width: 24,
-          static: true,
-        },
-        {
           label: 'Location',
           value: 'name',
           width: 200,
@@ -133,7 +120,7 @@ export default {
     },
     filteredData() {
       if (!this.selectedCountry) {
-        return this.data.filter(item => !!countryNames[item.location]);
+        return this.data.filter(item => !!item.isCountry);
       }
       return this.data.filter(item => item.country === this.selectedCountry);
     },

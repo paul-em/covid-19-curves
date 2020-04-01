@@ -8,7 +8,7 @@
       Updated once per day <a
         class="text-blue"
         target="_blank"
-        href="https://coronadatascraper.com/">by Corona Data Scraper Project</a>
+        href="https://github.com/CSSEGISandData/COVID-19">Johns Hopkins CSSE</a>
     </p>
     <div class="p-16">
       <column-select
@@ -55,7 +55,6 @@ import GithubCorner from '../components/GithubCorner.vue';
 import LocationSelect from '../components/LocationSelect.vue';
 import ColumnSelect from '../components/ColumnSelect.vue';
 import columns from '../components/columns';
-import countryNames from '../assets/countryNames.json';
 
 export default {
   components: {
@@ -67,7 +66,8 @@ export default {
     ColumnSelect,
   },
   async asyncData({ app: { $loader } }) {
-    return $loader.loadCases();
+    // return $loader.loadCases();
+    return $loader.loadCasesFromJHU();
   },
   data: () => ({
     timelines: {},
@@ -106,11 +106,11 @@ export default {
       this.updateQueryParams();
     },
   },
-  mounted() {
+  async mounted() {
     if (this.$route.query.column) {
       this.selectedColumn = this.$route.query.column;
     } else {
-      this.selectedColumn = 'cases';
+      this.selectedColumn = 'activeCases';
     }
     if (this.$route.query.shown) {
       if (Array.isArray(this.$route.query.shown)) {
@@ -123,7 +123,7 @@ export default {
         .sort((a, b) => (b[this.selectedColumn] || 0) - (a[this.selectedColumn] || 0));
       this.selectedLocations = [];
       sorted.some((item) => {
-        if (countryNames[item.location]) {
+        if (item.isCountry) {
           this.selectedLocations.push(item.name);
         }
         return this.selectedLocations.length === 5;

@@ -1,4 +1,5 @@
 import countryNames from '../assets/countryNames.json';
+import populations from './populations';
 
 const dataSource = 'https://coronadatascraper.cors-everywhere.workers.dev/';
 
@@ -27,6 +28,7 @@ function getDoubledValue(prevItems, metric, currentValue) {
   return dayCounter;
 }
 
+/*
 const mildCasesRecoveryTime = 10;
 const servereCasesRecoveryTime = 30;
 const servereRate = 0.2;
@@ -44,6 +46,7 @@ function estimateNewRecovered(prevItems, newDeaths) {
   }
   return Math.max(0, Math.round(mildCases + servereCases) - newDeaths);
 }
+*/
 
 
 function prepareTimelineItem(population, item, prevItems) {
@@ -67,9 +70,18 @@ function prepareTimelineItem(population, item, prevItems) {
     preparedItem.newDeathsPercent = preparedItem.deaths
       ? getPercentChange(preparedItem.deaths, prevItem.deaths)
       : 0;
+    if (prevItem.newCases === 0) {
+      preparedItem.growthRate = 1;
+    } else {
+      preparedItem.growthRate = Math.max(
+        0,
+        Math.min(10, (preparedItem.newCases || 0) / (prevItem.newCases || 0)),
+      );
+    }
   } else {
     preparedItem.newCases = preparedItem.cases;
     preparedItem.newDeaths = preparedItem.deaths;
+    preparedItem.growthRate = 1;
   }
   if (population) {
     preparedItem.casesInMillion = Math.round(
@@ -87,17 +99,11 @@ function prepareTimelineItem(population, item, prevItems) {
     ) / 100;
   }
 
-  preparedItem.newRecovered = estimateNewRecovered(
-    prevItems,
-    preparedItem.newDeaths,
-  );
-  if (Number.isNaN(preparedItem.newDeaths)) {
-    console.log('newDeaths is NaN', preparedItem.deaths, prevItem);
-  }
+  preparedItem.recovered = item.recovered || 0;
   if (prevItem) {
-    preparedItem.recovered = prevItem.recovered + preparedItem.newRecovered;
+    preparedItem.newRecovered = preparedItem.recovered - prevItem.recovered;
   } else {
-    preparedItem.recovered = 0;
+    preparedItem.newRecovered = preparedItem.recovered;
   }
 
   preparedItem.recoveredPercent = Math.round(
@@ -119,9 +125,6 @@ function prepareTimelineItem(population, item, prevItems) {
       (preparedItem.activeCases / population) * 10000000,
     ) / 10;
   }
-
-  preparedItem.reportedActiveCases = item.active;
-  preparedItem.reportedRecovered = item.recovered;
 
   return preparedItem;
 }
@@ -151,8 +154,69 @@ function getCountryDataFromRegions(data, country, population) {
   };
 }
 
+function formatDate(date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
 export default ({ $axios }, inject) => {
   inject('loader', {
+    async loadCasesFromJHU() {
+      const [confirmed, deaths, recovered] = await Promise.all([
+        $axios.get('https://covid19.cors-everywhere.workers.dev?metric=confirmed'),
+        $axios.get('https://covid19.cors-everywhere.workers.dev?metric=deaths'),
+        $axios.get('https://covid19.cors-everywhere.workers.dev?metric=recovered'),
+      ]);
+      console.log(confirmed);
+      const areas = Object.keys(confirmed.data);
+      console.log(areas);
+      const dates = [];
+      for (let i = 0; i < confirmed.data[areas[0]].length; i += 1) {
+        dates.push(formatDate(new Date(2020, 0, 22 + i)));
+      }
+      const timelines = {};
+      areas.forEach((area) => {
+        timelines[area] = [];
+        const confirmedTimeline = confirmed.data[area] || [];
+        const deathsTimeline = deaths.data[area] || [];
+        const recoveredTimeline = recovered.data[area] || [];
+        dates.forEach((date, index) => {
+          const data = {
+            date,
+            cases: confirmedTimeline[index] || 0,
+            deaths: deathsTimeline[index] || 0,
+            active: (confirmedTimeline[index] || 0)
+              - ((deathsTimeline[index] || 0) + (recoveredTimeline[index] || 0)),
+            recovered: recoveredTimeline[index] || 0,
+          };
+          timelines[area].push(
+            prepareTimelineItem(populations[area], data, timelines[area]),
+          );
+        });
+      });
+      const current = areas
+        .map((area) => {
+          const latestItem = timelines[area][dates.length - 1];
+          if (!latestItem || !latestItem.cases) {
+            return null;
+          }
+          const parts = area.split(', ');
+          const country = parts[parts.length - 1];
+          return {
+            ...latestItem,
+            name: area,
+            location: area,
+            isCountry: parts.length === 1,
+            country,
+            population: populations[area] || 0,
+          };
+        })
+        .filter(item => !!item);
+      return {
+        timelines,
+        timelineDates: dates,
+        current,
+      };
+    },
     async loadCases() {
       const raw = await $axios.get(dataSource);
       const { data } = raw;
@@ -199,6 +263,7 @@ export default ({ $axios }, inject) => {
             ...data[location],
             ...latestItem,
             name,
+            isCountry: !!countryNames[location],
             location,
             population: data[location].population || 0,
           };

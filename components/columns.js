@@ -1,6 +1,3 @@
-const recoveredDisclaimer = 'Recovered and active cases are caluclated by assuming recovery times of 10 days for mild cases and 30 days for servere cases as well as a serverity rate of 20%';
-
-
 function formatNumber(num) {
   if (!num) {
     return '';
@@ -34,6 +31,12 @@ export default [
     width: 90,
     formatter: row => (row.newCasesPercent > 1 ? `${row.newCasesPercent}%` : ''),
     serverity: row => Math.min(1, row.newCasesPercent / 30),
+  },
+  {
+    label: 'Growth Rate',
+    value: 'growthRate',
+    width: 90,
+    serverity: row => row.growthRate - 1,
   },
   {
     label: 'Total Cases / Million',
@@ -102,20 +105,13 @@ export default [
     },
   },
   {
-    label: 'Reported Active Cases',
-    value: 'reportedActiveCases',
-    formatter: row => formatNumber(row.reportedActiveCases),
-    width: 75,
-  },
-  {
-    label: 'Active Cases *',
+    label: 'Active Cases',
     value: 'activeCases',
     formatter: row => formatNumber(row.activeCases),
     width: 75,
-    disclaimer: recoveredDisclaimer,
   },
   {
-    label: 'Active Cases change *',
+    label: 'Active Cases change',
     value: 'newActiveCases',
     width: 75,
     formatter: row => (row.newActiveCases > 0 ? `+${row.newActiveCases}` : ''),
@@ -125,23 +121,15 @@ export default [
       }
       return Math.min(1, (row.newActiveCases / row.population) * 100000);
     },
-    disclaimer: recoveredDisclaimer,
   },
   {
-    label: 'Active Cases / Million *',
+    label: 'Active Cases / Million',
     value: 'activeCasesInMillion',
     width: 75,
     serverity: row => row.activeCasesInMillion / 500,
-    disclaimer: recoveredDisclaimer,
   },
   {
-    label: 'Reported Recovered',
-    value: 'reportedRecovered',
-    formatter: row => formatNumber(row.reportedRecovered),
-    width: 75,
-  },
-  {
-    label: 'New Recovered *',
+    label: 'New Recovered',
     value: 'newRecovered',
     width: 75,
     formatter: row => (row.newRecovered > 1 ? `+${row.newRecovered}` : ''),
@@ -151,18 +139,16 @@ export default [
       }
       return -Math.min(1, (row.newRecovered / row.population) * 100000);
     },
-    disclaimer: recoveredDisclaimer,
   },
   {
-    label: 'Total Recovered *',
+    label: 'Total Recovered',
     value: 'recovered',
     width: 75,
   },
   {
-    label: '% Recovered *',
+    label: '% Recovered',
     value: 'recoveredPercent',
     width: 75,
     formatter: row => (row.recoveredPercent > 0 ? `${row.recoveredPercent}%` : ''),
-    disclaimer: recoveredDisclaimer,
   },
 ];
