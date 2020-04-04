@@ -176,6 +176,26 @@ export default ({ $axios }, inject) => {
       for (let i = 0; i < confirmed.data[areas[0]].length; i += 1) {
         dates.push(formatDate(new Date(2020, 0, 22 + i)));
       }
+      confirmed.data.World = [];
+      deaths.data.World = [];
+      recovered.data.World = [];
+      dates.forEach(() => {
+        confirmed.data.World.push(0);
+        deaths.data.World.push(0);
+        recovered.data.World.push(0);
+      });
+      areas.forEach((area) => {
+        const isCountry = !area.includes(', ');
+        if (isCountry) {
+          dates.forEach((date, index) => {
+            confirmed.data.World[index] += confirmed.data[area][index] || 0;
+            deaths.data.World[index] += deaths.data[area][index] || 0;
+            recovered.data.World[index] += recovered.data[area][index] || 0;
+          });
+        }
+      });
+      areas.push('World');
+      console.log(confirmed.data.World);
       const timelines = {};
       areas.forEach((area) => {
         timelines[area] = [];
