@@ -1,6 +1,6 @@
 # COVID 19 Curves
 
-> Corona Virus COVID-19 Data Visualisation. Data is loaded from [Corona Data Scraper](https://coronadatascraper.com/).
+> Corona Virus COVID-19 Data Visualisation. Data is loaded from [John Hopkins University](https://github.com/CSSEGISandData/COVID-19).
 
 Available at [https://paul-em.github.io/covid-19-curves/](https://paul-em.github.io/covid-19-curves/)
 
