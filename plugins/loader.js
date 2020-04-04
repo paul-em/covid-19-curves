@@ -169,9 +169,7 @@ export default ({ $axios }, inject) => {
         $axios.get('https://covid19.cors-everywhere.workers.dev?metric=deaths'),
         $axios.get('https://covid19.cors-everywhere.workers.dev?metric=recovered'),
       ]);
-      console.log(confirmed);
       const areas = Object.keys(confirmed.data);
-      console.log(areas);
       const dates = [];
       for (let i = 0; i < confirmed.data[areas[0]].length; i += 1) {
         dates.push(formatDate(new Date(2020, 0, 22 + i)));
@@ -195,7 +193,6 @@ export default ({ $axios }, inject) => {
         }
       });
       areas.push('World');
-      console.log(confirmed.data.World);
       const timelines = {};
       areas.forEach((area) => {
         timelines[area] = [];
