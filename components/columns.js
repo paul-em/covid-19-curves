@@ -160,4 +160,15 @@ export default [
     width: 75,
     formatter: row => (row.recoveredPercent > 0 ? `${row.recoveredPercent}%` : ''),
   },
+  {
+    label: 'Recovered / Million',
+    value: 'recoveredInMillion',
+    width: 75,
+  },
+  {
+    label: 'Immunity',
+    value: 'immunity',
+    width: 75,
+    formatter: row => (row.immunity > 0 ? `${row.immunity}%` : ''),
+  },
 ];

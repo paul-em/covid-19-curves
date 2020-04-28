@@ -105,6 +105,14 @@ function prepareTimelineItem(population, item, prevItems) {
   } else {
     preparedItem.newRecovered = preparedItem.recovered;
   }
+  if (population) {
+    preparedItem.recoveredInMillion = Math.round(
+      (preparedItem.recovered / population) * 10000000,
+    ) / 10;
+    preparedItem.immunity = Math.round(
+      (preparedItem.recovered / population) * 100000,
+    ) / 1000;
+  }
 
   preparedItem.recoveredPercent = Math.round(
     (preparedItem.recovered / preparedItem.cases) * 1000,
