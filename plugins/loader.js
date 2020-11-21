@@ -48,6 +48,14 @@ function estimateNewRecovered(prevItems, newDeaths) {
 }
 */
 
+function getAvrg(values) {
+  let total = 0;
+  values.forEach((val) => {
+    total += val;
+  });
+  return Math.round(total / values.length);
+}
+
 
 function prepareTimelineItem(population, item, prevItems) {
   if (!item) {
@@ -84,6 +92,14 @@ function prepareTimelineItem(population, item, prevItems) {
     preparedItem.growthRate = 1;
   }
   if (population) {
+    preparedItem.newCasesInMillion = Math.round(
+      (preparedItem.newCases / population) * 10000000,
+    ) / 10;
+    preparedItem.newCasesInMillion7dAvrg = getAvrg([
+      preparedItem.newCasesInMillion,
+      ...[...prevItems]
+        .splice(-6)
+        .map(i => i.newCasesInMillion)]);
     preparedItem.casesInMillion = Math.round(
       (preparedItem.cases / population) * 10000000,
     ) / 10;

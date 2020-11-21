@@ -33,6 +33,18 @@ export default [
     serverity: row => Math.min(1, row.newCasesPercent / 30),
   },
   {
+    label: 'New Cases / Million',
+    value: 'newCasesInMillion',
+    width: 75,
+    serverity: row => row.newCasesInMillion / 500,
+  },
+  {
+    label: 'New Cases / Million 7d Avrg',
+    value: 'newCasesInMillion7dAvrg',
+    width: 75,
+    serverity: row => row.newCasesInMillion7dAvrg / 500,
+  },
+  {
     label: 'Growth Rate',
     value: 'growthRate',
     width: 90,
