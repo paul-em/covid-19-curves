@@ -8,7 +8,7 @@ function getPercentChange(currentValue, prevValue) {
     return 0;
   }
   const diff = currentValue - prevValue;
-  return Math.round((diff / prevValue) * 100);
+  return Math.round((diff / prevValue) * 1000) / 10;
 }
 
 function getDoubledValue(prevItems, metric, currentValue) {
