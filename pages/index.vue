@@ -110,7 +110,7 @@ export default {
     if (this.$route.query.column) {
       this.selectedColumn = this.$route.query.column;
     } else {
-      this.selectedColumn = 'activeCases';
+      this.selectedColumn = 'newCasesInMillion7dAvrg';
     }
     if (this.$route.query.shown) {
       if (Array.isArray(this.$route.query.shown)) {
@@ -119,15 +119,14 @@ export default {
         this.selectedLocations = [this.$route.query.shown];
       }
     } else {
-      const sorted = [...this.current]
-        .sort((a, b) => (b[this.selectedColumn] || 0) - (a[this.selectedColumn] || 0));
-      this.selectedLocations = [];
-      sorted.some((item) => {
-        if (item.isCountry) {
-          this.selectedLocations.push(item.name);
-        }
-        return this.selectedLocations.length === 5;
-      });
+      this.selectedLocations = [
+        'World',
+        'US',
+        'Austria',
+        'Germany',
+        'Israel',
+        'Italy',
+      ];
     }
   },
   methods: {
