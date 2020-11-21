@@ -6,7 +6,16 @@
         ref="chart"
         height="400"
       />
-      <input>
+      <label>
+        Start Date
+        <input
+          v-model="startDate"
+          type="date"
+          min="2020-01-22"
+          max="2020-05-01"
+          @input="update"
+        >
+      </label>
     </div>
   </div>
 </template>
@@ -22,6 +31,8 @@ export default {
   data: () => ({
     chart: null,
     linear: true,
+    startDate: '2020-01-22',
+    today: null,
   }),
   watch: {
     datasets: {
@@ -33,6 +44,7 @@ export default {
     },
   },
   mounted() {
+    this.today = new Date().toISOString();
     this.chart = new window.Chart(this.$refs.chart, {
       type: 'line',
       data: {
@@ -63,7 +75,13 @@ export default {
       this.chart.update();
     },
     update() {
-      this.chart.data.datasets = this.datasets;
+      const dateOffset = (new Date(this.startDate).getTime() - new Date('2020-01-22').getTime()) / (1000 * 60 * 60 * 24);
+      console.log('update');
+      this.chart.data.labels = this.labels.slice(dateOffset);
+      this.chart.data.datasets = this.datasets.map(item => ({
+        ...item,
+        data: item.data.slice(dateOffset),
+      }));
       this.chart.update();
     },
   },
@@ -73,6 +91,11 @@ export default {
 <style lang="scss" scoped>
 canvas {
   width: 100%;
+}
+
+label {
+  display: block;
+  padding: 24px;
 }
 
 .chart-container {
